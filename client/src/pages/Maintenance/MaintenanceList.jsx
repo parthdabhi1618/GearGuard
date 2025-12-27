@@ -1,23 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import { FiEdit2, FiTrash2, FiSearch, FiPlus } from "react-icons/fi";
-=======
-import { 
-  FiPlus, 
-  FiSearch, 
-  FiFilter, 
-  FiUser, 
-  FiTool, 
-  FiAlertCircle 
-} from "react-icons/fi";
->>>>>>> ff749a0486352e5548648775af7d25790daa5656
 import "./MaintenanceList.css";
 
 export default function MaintenanceList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-<<<<<<< HEAD
   const [filterStatus, setFilterStatus] = useState("All");
 
   const maintenanceData = [
@@ -118,73 +106,6 @@ export default function MaintenanceList() {
           <p style={styles.subtitle}>Track and manage all maintenance activities</p>
         </div>
         <button style={styles.primaryBtn} onClick={() => navigate("/maintenance/new")}>
-=======
-  const [statusFilter, setStatusFilter] = useState("All");
-
-  // Mock Data (Replace with API call later)
-  const requests = [
-    { 
-      id: "MR-101", 
-      subject: "Motor overheating", 
-      equipment: "CNC Machine", 
-      eqId: "EQ-001",
-      technician: "Ravi Sharma", 
-      status: "Open", 
-      priority: "High",
-      date: "2025-12-10"
-    },
-    { 
-      id: "MR-102", 
-      subject: "Monthly Service", 
-      equipment: "Air Conditioner", 
-      eqId: "EQ-002",
-      technician: "Amit Verma", 
-      status: "Done", 
-      priority: "Low",
-      date: "2025-12-08"
-    },
-    { 
-      id: "MR-103", 
-      subject: "Server Fan Noise", 
-      equipment: "Server Rack", 
-      eqId: "EQ-003",
-      technician: "Suresh Patel", 
-      status: "In Progress", 
-      priority: "Medium",
-      date: "2025-12-12"
-    },
-    { 
-        id: "MR-104", 
-        subject: "Hydraulic Leak", 
-        equipment: "Hydraulic Press", 
-        eqId: "EQ-004",
-        technician: "Ravi Sharma", 
-        status: "Open", 
-        priority: "Critical",
-        date: "2025-12-15"
-      },
-  ];
-
-  // Filter Logic
-  const filteredData = requests.filter((item) => {
-    const matchesSearch = item.subject.toLowerCase().includes(search.toLowerCase()) || 
-                          item.equipment.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === "All" || item.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
-
-  return (
-    <div className="maintenance-list-container">
-      
-      {/* 1. Header */}
-      <div className="list-header">
-        <div className="list-title">
-          <h1>Maintenance Requests</h1>
-          <p>View and manage all corrective and preventive tasks</p>
-        </div>
-        <button onClick={() => navigate("/maintenance/new")} className="btn-new">
->>>>>>> ff749a0486352e5548648775af7d25790daa5656
           <FiPlus size={18} /> New Request
         </button>
       </div>
@@ -196,7 +117,6 @@ export default function MaintenanceList() {
           <FiSearch size={18} style={{ color: "#9ca3af" }} />
           <input
             type="text"
-            placeholder="Search by ID, title, or equipment..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={styles.searchInput}
@@ -227,98 +147,93 @@ export default function MaintenanceList() {
           <tr style={styles.thead}>
             <th style={styles.th}>Request ID</th>
             <th style={styles.th}>Title</th>
-            <th style={styles.th}>Equipment</th>
-            <th style={styles.th}>Status</th>
-            <th style={styles.th}>Priority</th>
-            <th style={styles.th}>Assigned To</th>
-            <th style={styles.th}>Due Date</th>
-            <th style={styles.th}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.length === 0 ? (
-            <tr>
-              <td colSpan="8" style={styles.empty}>
-                No maintenance requests found
-              </td>
-            </tr>
-          ) : (
-            filtered.map((m) => (
-              <tr key={m.id} style={styles.tr}>
-                <td style={styles.td}>
-                  <strong>{m.id}</strong>
-                </td>
-                <td style={styles.td}>{m.title}</td>
-                <td style={styles.td}>{m.equipment}</td>
-                <td style={styles.td}>
-                  <span
-                    style={{
-                      ...styles.badge,
-                      background: getStatusColor(m.status) + "20",
-                      color: getStatusColor(m.status),
-                      borderColor: getStatusColor(m.status),
-                    }}
-                  >
-                    {m.status}
-                  </span>
-                </td>
-                <td style={styles.td}>
-                  <span
-                    style={{
-                      ...styles.badge,
-                      background: getPriorityColor(m.priority) + "20",
-                      color: getPriorityColor(m.priority),
-                      borderColor: getPriorityColor(m.priority),
-                    }}
-                  >
-                    {m.priority}
-                  </span>
-                </td>
-                <td style={styles.td}>{m.assignedTo}</td>
-                <td style={styles.td}>{m.dueDate}</td>
-                <td style={styles.td}>
-                  <div style={styles.actions}>
-                    <button
-                      style={styles.actionBtn}
-                      onClick={() => navigate(`/maintenance/${m.id}`)}
-                      title="View details"
-                    >
-                      <FiSearch size={16} />
-                    </button>
-                    <button
-                      style={styles.actionBtn}
-                      onClick={() => navigate(`/maintenance/${m.id}`)}
-                      title="Edit"
-                    >
-                      <FiEdit2 size={16} />
-                    </button>
-                    <button
-                      style={{ ...styles.actionBtn, color: "#ef4444" }}
-                      title="Delete"
-                    >
-                      <FiTrash2 size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-=======
-      {/* 2. Toolbar */}
-      <div className="list-toolbar">
-        <div className="search-box">
-          <FiSearch className="search-icon" />
-          <input 
-            type="text" 
-            placeholder="Search by subject or equipment..." 
-            className="toolbar-input"
+                  {/* TABLE */}
+                  <table style={styles.table}>
+                    <thead>
+                      <tr style={styles.thead}>
+                        <th style={styles.th}>Request ID</th>
+                        <th style={styles.th}>Title</th>
+                        <th style={styles.th}>Equipment</th>
+                        <th style={styles.th}>Status</th>
+                        <th style={styles.th}>Priority</th>
+                        <th style={styles.th}>Assigned To</th>
+                        <th style={styles.th}>Due Date</th>
+                        <th style={styles.th}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.length === 0 ? (
+                        <tr>
+                          <td colSpan="8" style={styles.empty}>
+                            No maintenance requests found
+                          </td>
+                        </tr>
+                      ) : (
+                        filtered.map((m) => (
+                          <tr key={m.id} style={styles.tr}>
+                            <td style={styles.td}>
+                              <strong>{m.id}</strong>
+                            </td>
+                            <td style={styles.td}>{m.title}</td>
+                            <td style={styles.td}>{m.equipment}</td>
+                            <td style={styles.td}>
+                              <span
+                                style={{
+                                  ...styles.badge,
+                                  background: getStatusColor(m.status) + "20",
+                                  color: getStatusColor(m.status),
+                                  borderColor: getStatusColor(m.status),
+                                }}
+                              >
+                                {m.status}
+                              </span>
+                            </td>
+                            <td style={styles.td}>
+                              <span
+                                style={{
+                                  ...styles.badge,
+                                  background: getPriorityColor(m.priority) + "20",
+                                  color: getPriorityColor(m.priority),
+                                  borderColor: getPriorityColor(m.priority),
+                                }}
+                              >
+                                {m.priority}
+                              </span>
+                            </td>
+                            <td style={styles.td}>{m.assignedTo}</td>
+                            <td style={styles.td}>{m.dueDate}</td>
+                            <td style={styles.td}>
+                              <div style={styles.actions}>
+                                <button
+                                  style={styles.actionBtn}
+                                  onClick={() => navigate(`/maintenance/${m.id}`)}
+                                  title="View details"
+                                >
+                                  <FiSearch size={16} />
+                                </button>
+                                <button
+                                  style={styles.actionBtn}
+                                  onClick={() => navigate(`/maintenance/${m.id}`)}
+                                  title="Edit"
+                                >
+                                  <FiEdit2 size={16} />
+                                </button>
+                                <button
+                                  style={{ ...styles.actionBtn, color: "#ef4444" }}
+                                  title="Delete"
+                                >
+                                  <FiTrash2 size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-        </div>
-
         <select 
           className="toolbar-select"
           value={statusFilter}
@@ -442,51 +357,36 @@ const styles = {
     gap: "8px",
     flexWrap: "wrap",
   },
-  filterBtn: {
-    padding: "8px 14px",
-    border: "1px solid #cbd5e1",
-    borderRadius: "6px",
-    background: "#fff",
-    cursor: "pointer",
-    fontSize: "13px",
-    fontWeight: "500",
-    transition: "all 0.2s",
-  },
-  table: {
-    width: "100%",
-    background: "#fff",
-    borderRadius: "10px",
-    borderCollapse: "collapse",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-    overflow: "hidden",
-  },
-  thead: {
-    background: "#f8fafc",
-  },
-  th: {
-    textAlign: "left",
-    padding: "14px 16px",
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#475569",
-    borderBottom: "2px solid #e2e8f0",
-  },
-  tr: {
-    borderBottom: "1px solid #e2e8f0",
-    transition: "background 0.2s",
-  },
-  td: {
-    padding: "14px 16px",
-    fontSize: "14px",
-    color: "#334155",
-  },
-  badge: {
-    display: "inline-block",
-    padding: "4px 10px",
-    borderRadius: "6px",
-    fontSize: "12px",
-    fontWeight: "500",
-    border: "1px solid",
+
+            function getStatusColor(status) {
+              switch (status) {
+                case "Open":
+                  return "#ef4444";
+                case "In Progress":
+                  return "#f59e0b";
+                case "Done":
+                  return "#10b981";
+                case "Overdue":
+                  return "#8b5cf6";
+                default:
+                  return "#6b7280";
+              }
+            }
+
+            function getPriorityColor(priority) {
+              switch (priority) {
+                case "Critical":
+                  return "#dc2626";
+                case "High":
+                  return "#ea580c";
+                case "Medium":
+                  return "#f59e0b";
+                case "Low":
+                  return "#10b981";
+                default:
+                  return "#6b7280";
+              }
+            }
   },
   empty: {
     textAlign: "center",

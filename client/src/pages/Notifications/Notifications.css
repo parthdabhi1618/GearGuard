@@ -1,0 +1,5 @@
+/* Notifications.css */
+
+.notifications-container { padding: 30px; }
+.notifications-list { display: flex; flex-direction: column; gap: 12px; }
+.notification-item { background: #fff; border-radius: 10px; }
