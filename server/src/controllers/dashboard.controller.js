@@ -1,5 +1,5 @@
 import Equipment from "../models/Equipment.model.js";
-import Maintenance from "../models/Maintenance.model.js";
+import Maintenance from "../models/MaintenanceRequest.model.js";
 
 export const getDashboardStats = async (req, res) => {
   try {

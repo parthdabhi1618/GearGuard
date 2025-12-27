@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FiTool, FiAlertCircle, FiClock, FiTrash2, FiArrowRight, FiPlus } from "react-icons/fi";
+import { FiTool, FiAlertCircle, FiClock, FiTrash2, FiArrowRight, FiPlus, FiLogOut, FiUser } from "react-icons/fi";
 import "./Dashboard.css";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  
+  // State for Data
   const [stats, setStats] = useState({
     equipment: 0,
     open: 0,
@@ -14,28 +16,51 @@ export default function Dashboard() {
   });
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // State for User Info
+  const [user, setUser] = useState({ name: "", role: "" });
 
-  // Fetch dashboard data on component mount
+  // 1. Check Authentication on Mount
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+
+    if (!token) {
+      navigate("/login"); // 🔒 Redirect if not logged in
+      return;
+    }
+
+    if (storedUser) {
+      setUser(JSON.parse(storedUser)); // Set user name for display
+    }
+
     fetchDashboardData();
     
-    // Refresh data every 30 seconds to keep it updated
+    // Refresh data every 30 seconds
     const interval = setInterval(fetchDashboardData, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [navigate]);
 
   async function fetchDashboardData() {
     try {
+      const token = localStorage.getItem("token"); // Get token again for the request
+      
+      // 2. Attach Token to the Request
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}` // <--- KEY CHANGE: Sends the ID card
+        }
+      };
+
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/maintenance');
+      const response = await axios.get('http://localhost:5000/api/maintenance', config);
       const requests = response.data;
       
-      // Calculate statistics
+      // Calculate statistics (Same logic as before)
       const open = requests.filter(r => r.state === 'draft' || r.state === 'assigned').length;
       const inProgress = requests.filter(r => r.state === 'in_progress').length;
       const scrapped = requests.filter(r => r.state === 'cancelled').length;
       
-      // Count overdue requests (scheduled_date is in the past and not completed)
       const now = new Date();
       const overdue = requests.filter(r => {
         return r.scheduled_date && 
@@ -44,13 +69,13 @@ export default function Dashboard() {
       }).length;
       
       setStats({
-        equipment: 18, // This would come from /api/equipment endpoint
+        equipment: 18, 
         open: open + inProgress,
         overdue: overdue,
         scrapped: scrapped,
       });
       
-      // Get the 3 most recent requests
+      // Get recent 3 requests
       const recentRequests = requests
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 3)
@@ -64,11 +89,22 @@ export default function Dashboard() {
       setRecent(recentRequests);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
-      // Use default empty stats if API fails
+      
+      // 🔒 If token is invalid (401), force logout
+      if (error.response && error.response.status === 401) {
+        handleLogout();
+      }
     } finally {
       setLoading(false);
     }
   }
+
+  // Logout Function
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   return (
     <div className="dashboard-container">
@@ -76,18 +112,31 @@ export default function Dashboard() {
       <div className="dashboard-header">
         <div className="dashboard-title">
           <h1>Dashboard</h1>
-          <p>Overview of maintenance activities</p>
+          <p>
+            Welcome back, <span style={{ color: "#3b82f6", fontWeight: "600" }}>{user.name || "Admin"}</span>
+          </p>
         </div>
 
-        <button
-          onClick={() => navigate("/maintenance/new")}
-          className="primary-btn"
-        >
-          <FiPlus size={18} /> Create Maintenance
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            onClick={() => navigate("/maintenance/new")}
+            className="primary-btn"
+          >
+            <FiPlus size={18} /> Create Request
+          </button>
+          
+          <button
+            onClick={handleLogout}
+            className="primary-btn"
+            style={{ backgroundColor: "#fee2e2", color: "#ef4444" }}
+            title="Log Out"
+          >
+            <FiLogOut size={18} />
+          </button>
+        </div>
       </div>
 
-      {/* STATS GRID - Improved spacing and alignment */}
+      {/* STATS GRID */}
       <div className="stats-grid">
         <ModernStatCard 
           title="Total Equipment" 
@@ -145,13 +194,13 @@ export default function Dashboard() {
               {recent.length === 0 ? (
                 <tr>
                   <td colSpan="4" style={{ textAlign: "center", padding: "30px", color: "#94a3b8" }}>
-                    No maintenance requests yet
+                    {loading ? "Loading data..." : "No maintenance requests yet"}
                   </td>
                 </tr>
               ) : (
                 recent.map((r) => (
                   <tr key={r.id}>
-                    <td style={{ fontWeight: "600", color: "#64748b" }}>#{r.id}</td>
+                    <td style={{ fontWeight: "600", color: "#64748b" }}>#{r.id.substring(r.id.length - 6)}</td>
                     <td style={{ fontWeight: "500" }}>{r.title}</td>
                     <td>
                       <StatusBadge status={r.status} />
@@ -172,7 +221,6 @@ export default function Dashboard() {
 
 /* ---------- INTERNAL COMPONENTS ---------- */
 
-// Enhanced Stat Card with consistent icon sizing and spacing
 function ModernStatCard({ title, value, color, icon, onClick }) {
   return (
     <div className="stat-card" onClick={onClick}>
@@ -181,7 +229,6 @@ function ModernStatCard({ title, value, color, icon, onClick }) {
           <p className="stat-title">{title}</p>
           <h2 className="stat-value">{value}</h2>
         </div>
-        {/* Icon with consistent sizing */}
         <div className="stat-icon-bg" style={{ backgroundColor: color }}>
           <span className="stat-icon-wrapper">
             {icon}
@@ -200,6 +247,7 @@ function PriorityBadge({ value }) {
     High: { bg: "#fee2e2", text: "#991b1b", dot: "#ef4444" },
     Medium: { bg: "#fef3c7", text: "#92400e", dot: "#f59e0b" },
     Low: { bg: "#dcfce7", text: "#166534", dot: "#22c55e" },
+    Critical: { bg: "#7f1d1d", text: "#ffffff", dot: "#ffffff" }
   };
 
   const style = map[value] || map.Low;
