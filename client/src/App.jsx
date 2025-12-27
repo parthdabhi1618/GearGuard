@@ -1,6 +1,6 @@
 import Navbar from "./components/layout/Navbar";
 import Sidebar from "./components/layout/Sidebar";
-import Dashboard from "./pages/Dashboard/Dashboard";
+import AppRoutes from "./routes";
 import "./styles/global.css";
 
 function App() {
@@ -10,7 +10,7 @@ function App() {
       <div style={{ display: "flex" }}>
         <Sidebar />
         <div style={{ flex: 1 }}>
-          <Dashboard />
+          <AppRoutes />
         </div>
       </div>
     </>
