@@ -5,14 +5,13 @@ import {
   updateRequest, 
   changeState 
 } from '../controllers/maintenance.controller.js';
-import { authMiddleware } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
 // 🎯 YOUR ROUTES
-router.get('/', authMiddleware, getRequests);
-router.post('/', authMiddleware, createRequest);
-router.put('/:id', authMiddleware, updateRequest);
-router.patch('/:id/state', authMiddleware, changeState);
+router.get('/', getRequests);
+router.post('/', createRequest);
+router.put('/:id', updateRequest);
+router.patch('/:id/state', changeState);
 
 export default router;
