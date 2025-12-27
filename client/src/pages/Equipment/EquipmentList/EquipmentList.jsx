@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiSearch, FiPlus, FiEye, FiFilter } from "react-icons/fi";
+import "./EquipmentList.css";
 
 export default function EquipmentList() {
   const navigate = useNavigate();
@@ -11,6 +13,7 @@ export default function EquipmentList() {
     { id: "EQ-001", name: "CNC Machine", serial: "SN1234", status: "Active" },
     { id: "EQ-002", name: "Air Conditioner", serial: "SN5678", status: "Active" },
     { id: "EQ-003", name: "Server Rack", serial: "SN9101", status: "Scrapped" },
+    { id: "EQ-004", name: "Hydraulic Press", serial: "SN2299", status: "Active" },
   ];
 
   const filtered = equipmentData.filter((e) => {
@@ -18,46 +21,46 @@ export default function EquipmentList() {
       e.name.toLowerCase().includes(search.toLowerCase()) ||
       e.id.toLowerCase().includes(search.toLowerCase());
 
-    const matchFilter =
-      filter === "All" || e.status === filter;
+    const matchFilter = filter === "All" || e.status === filter;
 
     return matchSearch && matchFilter;
   });
 
   return (
-    <div style={{ padding: "30px" }}>
+    <div className="equipment-container">
       {/* HEADER */}
-      <div style={header}>
-        <div>
+      <div className="page-header">
+        <div className="page-title">
           <h1>Equipment</h1>
-          <p style={{ color: "#64748b" }}>Manage all assets and machines</p>
+          <p>Manage all assets and machines</p>
         </div>
 
-        <button style={primaryBtn} onClick={() => navigate("/equipment/add")}>
-          + Add Equipment
+        <button className="primary-btn">
+          <FiPlus size={18} /> Add Equipment
         </button>
       </div>
 
-      {/* SEARCH + FILTER */}
-      <div style={toolbar}>
-        <input
-          type="text"
-          placeholder="Search equipment..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={searchInput}
-        />
+      {/* TOOLBAR */}
+      <div className="toolbar">
+        {/* Search */}
+        <div className="search-wrapper">
+          <FiSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search by name or ID..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="modern-input"
+          />
+        </div>
 
-        <div style={filterGroup}>
+        {/* Filter Buttons */}
+        <div className="filter-group">
           {["All", "Active", "Scrapped"].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              style={{
-                ...filterBtn,
-                background: filter === f ? "#e0e7ff" : "#fff",
-                color: filter === f ? "#1d4ed8" : "#334155",
-              }}
+              className={`filter-btn ${filter === f ? "active" : ""}`}
             >
               {f}
             </button>
@@ -66,154 +69,99 @@ export default function EquipmentList() {
       </div>
 
       {/* TABLE */}
-      <table style={table}>
-        <thead style={{ background: "#f8fafc" }}>
-          <tr>
-            <th style={th}>ID</th>
-            <th style={th}>Name</th>
-            <th style={th}>Serial No</th>
-            <th style={th}>Status</th>
-            <th style={th}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {equipmentData.length === 0 ? (
-            <tr>
-              <td colSpan="5" style={empty}>
-                No equipment found. Add your first asset.
-              </td>
-            </tr>
-          ) : filtered.length === 0 ? (
-            <tr>
-              <td colSpan="5" style={empty}>
-                No equipment matches your search.
-              </td>
-            </tr>
-          ) : (
-            filtered.map((eq) => (
-              <tr
-                key={eq.id}
-                style={{ cursor: "pointer" }}
-                onClick={() => navigate(`/equipment/${eq.id}`)}
-              >
-                <td style={td}>{eq.id}</td>
-                <td style={td}>{eq.name}</td>
-                <td style={td}>{eq.serial}</td>
-                <td style={td}>
-                  <StatusBadge status={eq.status} />
-                </td>
-                <td style={td} onClick={(e) => e.stopPropagation()}>
-                  <button
-                    style={linkBtn}
+      <div className="table-wrapper">
+        <div className="responsive-table">
+          <table className="equipment-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Serial No</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {equipmentData.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="empty-state">
+                    No equipment found. Add your first asset.
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="empty-state">
+                    No equipment matches your search.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((eq) => (
+                  <tr
+                    key={eq.id}
+                    className="table-row"
                     onClick={() => navigate(`/equipment/${eq.id}`)}
                   >
-                    View
-                  </button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+                    <td style={{ fontWeight: 600, color: "#64748b" }}>{eq.id}</td>
+                    <td style={{ fontWeight: 500, color: "#0f172a" }}>{eq.name}</td>
+                    <td>{eq.serial}</td>
+                    <td>
+                      <StatusBadge status={eq.status} />
+                    </td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className="action-btn"
+                        onClick={() => navigate(`/equipment/${eq.id}`)}
+                      >
+                        <FiEye /> View
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
 
-/* ---------- COMPONENTS ---------- */
+/* ---------- INTERNAL COMPONENTS ---------- */
 
 function StatusBadge({ status }) {
-  const active = status === "Active";
+  const isActive = status === "Active";
+  const isScrapped = status === "Scrapped";
+  
+  let bg = "#f1f5f9";
+  let color = "#475569";
+  let dot = "#94a3b8";
+
+  if (isActive) {
+    bg = "#dcfce7";
+    color = "#166534";
+    dot = "#22c55e";
+  } else if (isScrapped) {
+    bg = "#f1f5f9";
+    color = "#475569";
+    dot = "#94a3b8";
+  }
+
   return (
     <span
       style={{
+        background: bg,
+        color: color,
         padding: "4px 10px",
-        borderRadius: "12px",
+        borderRadius: "20px",
         fontSize: "12px",
-        background: active ? "#dcfce7" : "#fee2e2",
-        color: active ? "#166534" : "#991b1b",
+        fontWeight: "600",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px"
       }}
     >
+      <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: dot }}></span>
       {status}
     </span>
   );
 }
-
-/* ---------- STYLES ---------- */
-
-const header = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-};
-
-const toolbar = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  margin: "20px 0",
-};
-
-const searchInput = {
-  padding: "10px",
-  width: "280px",
-  borderRadius: "6px",
-  border: "1px solid #cbd5e1",
-};
-
-const filterGroup = {
-  display: "flex",
-  gap: "8px",
-};
-
-const filterBtn = {
-  border: "1px solid #cbd5e1",
-  padding: "6px 12px",
-  borderRadius: "6px",
-  fontSize: "13px",
-  cursor: "pointer",
-};
-
-const primaryBtn = {
-  background: "#2563eb",
-  color: "#fff",
-  border: "none",
-  padding: "10px 16px",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontSize: "14px",
-};
-
-const linkBtn = {
-  background: "transparent",
-  border: "none",
-  color: "#2563eb",
-  cursor: "pointer",
-  fontSize: "13px",
-};
-
-const table = {
-  width: "100%",
-  background: "#ffffff",
-  borderRadius: "10px",
-  borderCollapse: "collapse",
-  overflow: "hidden",
-};
-
-const th = {
-  textAlign: "left",
-  padding: "12px",
-  fontSize: "14px",
-  color: "#475569",
-};
-
-const td = {
-  padding: "12px",
-  fontSize: "14px",
-  borderTop: "1px solid #e2e8f0",
-};
-
-const empty = {
-  textAlign: "center",
-  padding: "24px",
-  color: "#64748b",
-};

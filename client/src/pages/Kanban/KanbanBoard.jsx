@@ -1,180 +1,200 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { DndContext, closestCenter } from "@dnd-kit/core";
 import { useNavigate } from "react-router-dom";
+import {
+  DndContext,
+  closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  TouchSensor,
+} from "@dnd-kit/core";
 import {
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { FiMoreHorizontal, FiUser } from "react-icons/fi"; // Install react-icons
+import "./Kanban.css"; // Import the CSS
 
 /* ---------------- DATA ---------------- */
 
 const initialData = {
   open: [
-    { id: "1", title: "Motor Repair", tech: "Ravi", priority: "High" },
-    { id: "2", title: "AC Service", tech: "Amit", priority: "Low" },
+    { id: "1", title: "Motor Repair - Conveyor", tech: "Ravi", priority: "High" },
+    { id: "2", title: "AC Service - Server Room", tech: "Amit", priority: "Low" },
   ],
   progress: [
-    { id: "3", title: "Server Check", tech: "Suresh", priority: "Medium" },
+    { id: "3", title: "Server Check & Updates", tech: "Suresh", priority: "Medium" },
   ],
-  done: [],
+  done: [
+     { id: "4", title: "Hydraulic Fluid Change", tech: "Ravi", priority: "High" }, 
+  ],
 };
 
-/* ---------------- PAGE ---------------- */
+/* ---------------- MAIN COMPONENT ---------------- */
 
 export default function KanbanBoard() {
   const [columns, setColumns] = useState(initialData);
-  const [activeColumn, setActiveColumn] = useState(null);
-  const navigate = useNavigate();
+  const [activeId, setActiveId] = useState(null);
 
+  // Setup sensors for better mobile/desktop touch handling
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor)
+  );
 
+  // Handle Dragging
   function onDragEnd(event) {
     const { active, over } = event;
+    setActiveId(null);
+
     if (!over) return;
 
-    const from = activeColumn;
-    const to = over.data.current?.column;
+    // Find the source column and destination column
+    const sourceColId = findColumn(active.id);
+    const destColId = over.data.current?.sortable?.containerId || over.id; // Handle dropping on column or item
 
-    if (!from || !to) return;
+    if (!sourceColId || !destColId || sourceColId === destColId) return;
 
-    const sourceItems = [...columns[from]];
-    const destItems = [...columns[to]];
-
-    const index = sourceItems.findIndex(i => i.id === active.id);
-    const [moved] = sourceItems.splice(index, 1);
-    destItems.push(moved);
+    const sourceItems = [...columns[sourceColId]];
+    const destItems = [...columns[destColId]];
+    const itemIndex = sourceItems.findIndex((i) => i.id === active.id);
+    
+    // Move item
+    const [movedItem] = sourceItems.splice(itemIndex, 1);
+    destItems.push(movedItem);
 
     setColumns({
       ...columns,
-      [from]: sourceItems,
-      [to]: destItems,
+      [sourceColId]: sourceItems,
+      [destColId]: destItems,
     });
   }
 
+  function findColumn(itemId) {
+    return Object.keys(columns).find((key) =>
+      columns[key].some((i) => i.id === itemId)
+    );
+  }
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      style={{ padding: "30px" }}
-    >
-      <h1>Maintenance Kanban</h1>
-      <p style={{ color: "#64748b", marginBottom: "25px" }}>
-        Track and manage maintenance workflow
-      </p>
+    <div className="kanban-container">
+      <div className="kanban-header">
+        <h1>Maintenance Board</h1>
+        <p>Drag and drop tickets to update status</p>
+      </div>
 
       <DndContext
+        sensors={sensors}
         collisionDetection={closestCenter}
-        onDragStart={(e) => setActiveColumn(e.active.data.current.column)}
+        onDragStart={(e) => setActiveId(e.active.id)}
         onDragEnd={onDragEnd}
       >
-        <div style={board}>
-          {Object.entries(columns).map(([key, items]) => (
-            <KanbanColumn key={key} id={key} items={items} />
+        <div className="kanban-board">
+          {Object.entries(columns).map(([colId, items]) => (
+            <KanbanColumn key={colId} id={colId} items={items} />
           ))}
         </div>
       </DndContext>
-    </motion.div>
+    </div>
   );
 }
 
 /* ---------------- COLUMN ---------------- */
 
 function KanbanColumn({ id, items }) {
+  const titleMap = {
+    open: "Open Requests",
+    progress: "In Progress",
+    done: "Completed",
+  };
+
   return (
-    <motion.div
-      whileHover={{ backgroundColor: "#eef2ff" }}
-      transition={{ duration: 0.2 }}
-      style={column}
-    >
-      <h3 style={{ marginBottom: "12px" }}>{titleMap[id]}</h3>
+    <div className="kanban-column">
+      <div className="column-header">
+        <span className="column-title">
+            {/* Dot Indicator */}
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: getColumnColor(id) }}></span>
+            {titleMap[id]}
+        </span>
+        <span className="task-count">{items.length}</span>
+      </div>
 
       <SortableContext
-        items={items.map(i => i.id)}
+        id={id} // Important: This ID is used to identify destination
+        items={items.map((i) => i.id)}
         strategy={verticalListSortingStrategy}
       >
-        {items.length === 0 ? (
-          <div style={emptyColumn}>No tasks</div>
-        ) : (
-          items.map(item => (
-            <KanbanCard key={item.id} item={item} column={id} />
-          ))
-        )}
+        <div style={{ minHeight: "200px" }}> {/* Drop zone area */}
+            {items.length === 0 ? (
+            <div className="empty-placeholder">Drop items here</div>
+            ) : (
+            items.map((item) => <KanbanCard key={item.id} item={item} />)
+            )}
+        </div>
       </SortableContext>
-    </motion.div>
+    </div>
   );
 }
 
 /* ---------------- CARD ---------------- */
 
-function KanbanCard({ item, column }) {
-  const { setNodeRef, attributes, listeners, transform, transition } =
-    useSortable({
-      id: item.id,
-      data: { column },
-    });
+function KanbanCard({ item }) {
+  const navigate = useNavigate();
+  
+  const {
+    setNodeRef,
+    attributes,
+    listeners,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
 
-  return (
-    <motion.div
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      whileHover={{ scale: 1.03 }}
-      whileTap={{ scale: 0.98 }}
-      style={{
-        ...card,
-        transform: CSS.Transform.toString(transform),
-        transition,
-        borderLeft: `6px solid ${priorityColor(item.priority)}`,
-      }}
-    >
-      <strong onClick={() => navigate("/maintenance/101")} style={{ cursor: "pointer" }}>
-          {item.title}
-      </strong>
-
-      <p style={meta}>Technician: {item.tech}</p>
-      <PriorityBadge value={item.priority} />
-    </motion.div>
-  );
-}
-
-/* ---------------- UI PARTS ---------------- */
-
-function PriorityBadge({ value }) {
-  const map = {
-    High: ["#fee2e2", "#991b1b"],
-    Medium: ["#fef3c7", "#92400e"],
-    Low: ["#dcfce7", "#166534"],
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1, // Visual feedback when dragging
+    borderLeft: `4px solid ${priorityColor(item.priority)}`,
   };
 
-  const [bg, color] = map[value];
-
   return (
-    <span
-      style={{
-        background: bg,
-        color,
-        padding: "4px 10px",
-        borderRadius: "12px",
-        fontSize: "12px",
-        display: "inline-block",
-        marginTop: "6px",
-      }}
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="kanban-card"
     >
-      {value}
-    </span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+        <span className="card-title" onClick={() => navigate(`/maintenance/${item.id}`)}>
+            {item.title}
+        </span>
+        <button style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#94a3b8' }}>
+            <FiMoreHorizontal />
+        </button>
+      </div>
+
+      <PriorityBadge value={item.priority} />
+
+      <div className="card-meta">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <FiUser /> {item.tech}
+        </div>
+        <span>ID: {item.id}</span>
+      </div>
+    </div>
   );
 }
 
 /* ---------------- HELPERS ---------------- */
 
-const titleMap = {
-  open: "Open",
-  progress: "In Progress",
-  done: "Done",
-};
+function getColumnColor(id) {
+    if(id === 'open') return '#3b82f6';
+    if(id === 'progress') return '#f59e0b';
+    return '#22c55e';
+}
 
 function priorityColor(p) {
   if (p === "High") return "#ef4444";
@@ -182,40 +202,29 @@ function priorityColor(p) {
   return "#22c55e";
 }
 
-/* ---------------- STYLES ---------------- */
+function PriorityBadge({ value }) {
+  const map = {
+    High: { bg: "#fee2e2", text: "#991b1b" },
+    Medium: { bg: "#fef3c7", text: "#92400e" },
+    Low: { bg: "#dcfce7", text: "#166534" },
+  };
 
-const board = {
-  display: "flex",
-  gap: "20px",
-};
+  const style = map[value];
 
-const column = {
-  background: "#f8fafc",
-  padding: "16px",
-  borderRadius: "14px",
-  width: "300px",
-  minHeight: "420px",
-  transition: "0.2s",
-};
-
-const card = {
-  background: "#ffffff",
-  padding: "14px",
-  borderRadius: "10px",
-  marginBottom: "12px",
-  boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-  cursor: "grab",
-};
-
-const meta = {
-  fontSize: "13px",
-  color: "#475569",
-  margin: "6px 0",
-};
-
-const emptyColumn = {
-  textAlign: "center",
-  color: "#94a3b8",
-  fontSize: "14px",
-  marginTop: "40px",
-};
+  return (
+    <span
+      style={{
+        background: style.bg,
+        color: style.text,
+        padding: "2px 8px",
+        borderRadius: "4px",
+        fontSize: "11px",
+        fontWeight: "600",
+        display: "inline-block",
+        marginTop: "8px",
+      }}
+    >
+      {value}
+    </span>
+  );
+}
