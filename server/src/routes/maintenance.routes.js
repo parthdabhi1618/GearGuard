@@ -19,24 +19,34 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-// @route   POST /api/maintenance
-// @desc    Create a new request (For testing)
-// @access  Private
+/// @route   POST /api/maintenance
+// @desc    Create a new request
 router.post("/", protect, async (req, res) => {
   try {
-    const { name, equipment, priority, description } = req.body;
+    // 1. Destructure the exact names your Frontend sends
+    const { 
+      name, 
+      equipment_id, // Your form sends 'equipment_id'
+      priority, 
+      description,
+      scheduled_date, 
+      state 
+    } = req.body;
     
     const newRequest = new MaintenanceRequest({
       name,
-      equipment,
+      equipment: equipment_id, // Map 'equipment_id' to our DB field 'equipment'
       priority,
       description,
+      scheduled_date,
+      state: state || 'draft',
       createdBy: req.user.id
     });
 
     await newRequest.save();
     res.status(201).json(newRequest);
   } catch (error) {
+    console.error("Error creating maintenance request:", error);
     res.status(500).json({ message: "Error creating request" });
   }
 });
