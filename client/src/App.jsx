@@ -7,12 +7,17 @@ import "./styles/global.css";
 function App() {
   // State to manage the Mobile Sidebar visibility
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  // State to manage desktop sidebar collapse
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Toggle function for the Hamburger button
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   
   // Close function for clicking the overlay or a link
   const closeSidebar = () => setIsSidebarOpen(false);
+  
+  // Toggle collapse for desktop
+  const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
@@ -20,10 +25,10 @@ function App() {
       {/* 1. Pass the toggle function to the Navbar */}
       <Navbar onMenuClick={toggleSidebar} />
 
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div style={{ display: "flex", flex: 1, overflow: "visible" }}>
         
         {/* 2. Pass the state and close function to the Sidebar */}
-        <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
+        <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} isCollapsed={isCollapsed} onToggleCollapse={toggleCollapse} />
 
         {/* 3. Main Content Area */}
         <main 

@@ -9,12 +9,14 @@ import {
   FiList, 
   FiUsers, 
   FiPieChart, 
-  FiX 
+  FiX,
+  FiChevronLeft,
+  FiChevronRight
 } from "react-icons/fi"; 
 import './Sidebar.css';
 
-// Accept 'isOpen' and 'onClose' props for mobile handling
-export default function Sidebar({ isOpen, onClose }) {
+// Accept 'isOpen', 'onClose', 'isCollapsed', and 'onToggleCollapse' props
+export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }) {
   return (
     <>
       {/* Mobile Overlay Backdrop */}
@@ -23,7 +25,12 @@ export default function Sidebar({ isOpen, onClose }) {
         onClick={onClose}
       />
 
-      <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+      <div className={`sidebar ${isOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`}>
+        
+        {/* Desktop Collapse Toggle Button */}
+        <button className="collapse-toggle-btn" onClick={onToggleCollapse}>
+          {isCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
+        </button>
         
         {/* Mobile Header with Close Button */}
         <div className="sidebar-mobile-header">
