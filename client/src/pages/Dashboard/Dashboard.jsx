@@ -19,7 +19,6 @@ export default function Dashboard() {
   const [user, setUser] = useState({ name: "" });
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
 
     if (!token) {
@@ -32,7 +31,7 @@ export default function Dashboard() {
     fetchDashboardData();
     const interval = setInterval(fetchDashboardData, 30000);
     return () => clearInterval(interval);
-  }, [navigate]);
+  }, []);
 
   async function fetchDashboardData() {
     try {
@@ -40,7 +39,7 @@ export default function Dashboard() {
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/maintenance', config);
+      const response = await axios.get('http://localhost:5000/api/maintenance');
       const requests = response.data;
       
       const open = requests.filter(r => r.state === 'draft' || r.state === 'assigned').length;
