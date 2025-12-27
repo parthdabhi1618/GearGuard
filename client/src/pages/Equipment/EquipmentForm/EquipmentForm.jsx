@@ -7,7 +7,8 @@ import {
   FiBox, 
   FiMapPin, 
   FiCpu, 
-  FiDollarSign 
+  FiDollarSign,
+  FiInfo 
 } from "react-icons/fi";
 import "./EquipmentForm.css";
 
@@ -17,62 +18,25 @@ export default function EquipmentForm() {
   const isEditMode = !!id;
 
   const [loading, setLoading] = useState(false);
-  const [teams, setTeams] = useState([]);
-  const [technicians, setTechnicians] = useState([]);
   
+  // Form State
   const [formData, setFormData] = useState({
     name: "",
-    serialNumber: "",
-    status: "active",
-    department: "",
-    assignedTo: "",
-    purchaseDate: "",
-    warrantyExpiry: "",
+    code: "", // Mapped to Serial Number
     location: "",
-    team_id: "",
-    default_technician_id: "",
-    category: "",
+    department: "",
+    status: "operational",
     manufacturer: "",
     model: "",
-    specifications: "",
-    notes: "",
+    purchaseDate: "",
   });
 
+  // If Edit Mode, fetch data (Optional: Needs backend route GET /api/equipment/:id)
   useEffect(() => {
-    fetchTeamsAndTechnicians();
     if (isEditMode) {
-      fetchEquipment();
+      // fetchEquipment(); // Uncomment when Edit route is ready
     }
   }, [id]);
-
-  const fetchTeamsAndTechnicians = async () => {
-    try {
-      const [teamsRes, techRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/teams"),
-        axios.get("http://localhost:5000/api/teams/technicians"),
-      ]);
-      setTeams(teamsRes.data);
-      setTechnicians(techRes.data);
-    } catch (error) {
-      console.error("Error fetching teams/technicians:", error);
-    }
-  };
-
-  const fetchEquipment = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5000/api/equipment/${id}`);
-      const data = res.data;
-      setFormData({
-        ...data,
-        purchaseDate: data.purchaseDate ? data.purchaseDate.split("T")[0] : "",
-        warrantyExpiry: data.warrantyExpiry ? data.warrantyExpiry.split("T")[0] : "",
-        team_id: data.team_id?._id || "",
-        default_technician_id: data.default_technician_id?._id || "",
-      });
-    } catch (error) {
-      console.error("Error fetching equipment:", error);
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -84,15 +48,29 @@ export default function EquipmentForm() {
     setLoading(true);
 
     try {
-      if (isEditMode) {
-        await axios.put(`http://localhost:5000/api/equipment/${id}`, formData);
-      } else {
-        await axios.post("http://localhost:5000/api/equipment", formData);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Please login first");
+        navigate("/login");
+        return;
       }
+
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+
+      if (isEditMode) {
+        // Update logic here
+      } else {
+        // Create Logic
+        await axios.post("http://localhost:5000/api/equipment", formData, config);
+      }
+      
+      alert("Equipment Saved Successfully!");
       navigate("/equipment");
     } catch (error) {
       console.error("Error saving equipment:", error);
-      alert(error.response?.data?.error || "Error saving equipment");
+      alert(error.response?.data?.message || "Error saving equipment");
     } finally {
       setLoading(false);
     }
@@ -103,9 +81,9 @@ export default function EquipmentForm() {
       {/* Header */}
       <div className="form-header">
         <button onClick={() => navigate("/equipment")} className="back-link">
-          <FiArrowLeft /> Back to Equipment List
+          <FiArrowLeft /> Back to List
         </button>
-        <h1>{isEditMode ? "Edit Equipment Details" : "Add New Equipment"}</h1>
+        <h1>{isEditMode ? "Edit Equipment" : "Add New Equipment"}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="form-card">
@@ -113,7 +91,7 @@ export default function EquipmentForm() {
         {/* SECTION 1: GENERAL INFO */}
         <div className="form-section">
           <div className="section-title">
-            <FiBox color="#2563eb" /> General Information
+            <FiBox color="#3b82f6" /> General Information
           </div>
           <div className="form-grid">
             <Input 
@@ -122,90 +100,35 @@ export default function EquipmentForm() {
               value={formData.name} 
               onChange={handleChange} 
               required 
-              placeholder="e.g. CNC Machine"
+              placeholder="e.g. CNC Machine 01"
             />
             <Input 
-              label="Serial Number" 
-              name="serialNumber" 
-              value={formData.serialNumber} 
+              label="Equipment ID / Serial Code" 
+              name="code" 
+              value={formData.code} 
               onChange={handleChange} 
               required 
-              placeholder="e.g. SN-2024-X"
+              placeholder="e.g. EQ-105"
             />
-            <Input 
-              label="Category" 
-              name="category" 
-              value={formData.category} 
-              onChange={handleChange} 
-              placeholder="e.g. Heavy Machinery"
-            />
-            <Select 
+             <Select 
               label="Status" 
               name="status" 
               value={formData.status} 
               onChange={handleChange}
               options={[
-                { value: "active", label: "Active" },
-                { value: "scrapped", label: "Scrapped" },
-                { value: "maintenance", label: "Under Maintenance" }
+                { value: "operational", label: "Operational" },
+                { value: "maintenance", label: "Under Maintenance" },
+                { value: "down", label: "Down / Broken" },
+                { value: "scrapped", label: "Scrapped" }
               ]}
             />
           </div>
         </div>
 
-        {/* SECTION 2: TECHNICAL DETAILS */}
+        {/* SECTION 2: LOCATION */}
         <div className="form-section">
           <div className="section-title">
-            <FiCpu color="#2563eb" /> Technical Details
-          </div>
-          <div className="form-grid">
-            <Input 
-              label="Manufacturer" 
-              name="manufacturer" 
-              value={formData.manufacturer} 
-              onChange={handleChange} 
-            />
-            <Input 
-              label="Model" 
-              name="model" 
-              value={formData.model} 
-              onChange={handleChange} 
-            />
-            
-            <div className="input-group">
-              <label className="input-label">Maintenance Team <span className="required-star">*</span></label>
-              <select 
-                name="team_id" 
-                value={formData.team_id} 
-                onChange={handleChange} 
-                className="modern-select"
-                required
-              >
-                <option value="">Select Team</option>
-                {teams.map((t) => <option key={t._id} value={t._id}>{t.name}</option>)}
-              </select>
-            </div>
-
-            <div className="input-group">
-              <label className="input-label">Default Technician <span className="required-star">*</span></label>
-              <select 
-                name="default_technician_id" 
-                value={formData.default_technician_id} 
-                onChange={handleChange} 
-                className="modern-select"
-                required
-              >
-                <option value="">Select Technician</option>
-                {technicians.map((t) => <option key={t._id} value={t._id}>{t.name}</option>)}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION 3: LOCATION & TRACKING */}
-        <div className="form-section">
-          <div className="section-title">
-            <FiMapPin color="#2563eb" /> Location & Tracking
+            <FiMapPin color="#3b82f6" /> Location & Tracking
           </div>
           <div className="form-grid">
             <Input 
@@ -214,6 +137,7 @@ export default function EquipmentForm() {
               value={formData.department} 
               onChange={handleChange} 
               required 
+              placeholder="e.g. Production"
             />
             <Input 
               label="Location" 
@@ -221,57 +145,38 @@ export default function EquipmentForm() {
               value={formData.location} 
               onChange={handleChange} 
               required 
-              placeholder="e.g. Building A, Floor 2"
-            />
-            <Input 
-              label="Assigned Employee" 
-              name="assignedTo" 
-              value={formData.assignedTo} 
-              onChange={handleChange} 
+              placeholder="e.g. Floor 2, Zone A"
             />
           </div>
         </div>
 
-        {/* SECTION 4: PURCHASE INFO */}
+        {/* SECTION 3: DETAILS (Optional for now) */}
         <div className="form-section">
           <div className="section-title">
-            <FiDollarSign color="#2563eb" /> Purchase & Warranty
+            <FiCpu color="#3b82f6" /> Technical Details
           </div>
           <div className="form-grid">
             <Input 
-              type="date" 
+              label="Manufacturer" 
+              name="manufacturer" 
+              value={formData.manufacturer} 
+              onChange={handleChange} 
+              placeholder="e.g. Siemens"
+            />
+            <Input 
+              label="Model" 
+              name="model" 
+              value={formData.model} 
+              onChange={handleChange} 
+              placeholder="e.g. X500-Pro"
+            />
+            <Input 
+              type="date"
               label="Purchase Date" 
               name="purchaseDate" 
               value={formData.purchaseDate} 
               onChange={handleChange} 
-              required 
             />
-            <Input 
-              type="date" 
-              label="Warranty Expiry" 
-              name="warrantyExpiry" 
-              value={formData.warrantyExpiry} 
-              onChange={handleChange} 
-            />
-          </div>
-        </div>
-
-        {/* SECTION 5: NOTES */}
-        <div className="form-section">
-          <div className="form-grid">
-             <TextArea 
-               label="Specifications" 
-               name="specifications" 
-               value={formData.specifications} 
-               onChange={handleChange} 
-               placeholder="Detailed specs..."
-             />
-             <TextArea 
-               label="Additional Notes" 
-               name="notes" 
-               value={formData.notes} 
-               onChange={handleChange} 
-             />
           </div>
         </div>
 
@@ -312,15 +217,6 @@ function Select({ label, options, ...props }) {
           <option key={opt.value} value={opt.value}>{opt.label}</option>
         ))}
       </select>
-    </div>
-  );
-}
-
-function TextArea({ label, ...props }) {
-  return (
-    <div className="input-group">
-      <label className="input-label">{label}</label>
-      <textarea className="modern-textarea" {...props} />
     </div>
   );
 }

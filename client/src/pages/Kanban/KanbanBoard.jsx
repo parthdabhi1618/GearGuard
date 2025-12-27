@@ -19,51 +19,12 @@ import { CSS } from "@dnd-kit/utilities";
 import { FiMoreHorizontal, FiUser, FiFilter, FiX, FiAlertCircle } from "react-icons/fi";
 import "./Kanban.css";
 
-/* ---------------- DATA ---------------- */
+/* ---------------- DATA SKELETON ---------------- */
 
 const initialData = {
-  new: [
-    { 
-      id: "1", 
-      title: "Motor Repair - Conveyor", 
-      tech: "Ravi", 
-      priority: "High",
-      equipment: "EQ-001",
-      equipmentName: "CNC Machine",
-      dueDate: "2025-12-25"
-    },
-    { 
-      id: "2", 
-      title: "AC Service - Server Room", 
-      tech: "Amit", 
-      priority: "Low",
-      equipment: "EQ-002",
-      equipmentName: "Air Conditioner",
-      dueDate: "2025-12-28"
-    },
-  ],
-  progress: [
-    { 
-      id: "3", 
-      title: "Server Check & Updates", 
-      tech: "Suresh", 
-      priority: "Medium",
-      equipment: "EQ-003",
-      equipmentName: "Server Rack",
-      dueDate: "2025-12-26"
-    },
-  ],
-  repaired: [
-    { 
-      id: "4", 
-      title: "Hydraulic Fluid Change", 
-      tech: "Ravi", 
-      priority: "High",
-      equipment: "EQ-001",
-      equipmentName: "CNC Machine",
-      dueDate: "2025-12-20"
-    }, 
-  ],
+  new: [],
+  progress: [],
+  repaired: [],
   scrap: []
 };
 
@@ -88,7 +49,19 @@ export default function KanbanBoard() {
   async function fetchRequests() {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/maintenance');
+      
+      // 🔒 AUTH CHECK
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+
+      const response = await axios.get('http://localhost:5000/api/maintenance', config);
       const requests = response.data;
       
       // Organize requests into columns by state
@@ -105,15 +78,16 @@ export default function KanbanBoard() {
         if (request.state === 'in_progress') stage = 'progress';
         else if (request.state === 'completed') stage = 'repaired';
         else if (request.state === 'cancelled') stage = 'scrap';
+        else if (request.state === 'assigned') stage = 'new'; // Map assigned to new/todo
         else stage = 'new';
         
         if (organizedData[stage]) {
           organizedData[stage].push({
             id: request._id || request.id,
-            title: request.name, // Backend returns 'name' not 'title'
+            title: request.name, 
             tech: request.technician_id || 'Unassigned',
             priority: request.priority === '0' ? 'Low' : request.priority === '1' ? 'Medium' : request.priority === '2' ? 'High' : 'Critical',
-            equipment: request.equipment_id,
+            equipment: request.equipment || request.equipment_id, // Handle both field names
             equipmentName: request.equipmentName,
             dueDate: request.scheduled_date
           });
@@ -123,8 +97,9 @@ export default function KanbanBoard() {
       setColumns(organizedData);
     } catch (error) {
       console.error("Error fetching requests:", error);
-      // Fall back to initial data if API fails
-      setColumns(initialData);
+      if (error.response && error.response.status === 401) {
+        navigate("/login");
+      }
     } finally {
       setLoading(false);
     }
@@ -135,8 +110,6 @@ export default function KanbanBoard() {
     useSensor(PointerSensor, { 
       activationConstraint: { 
         distance: 8,
-        delay: 100,
-        tolerance: 5
       } 
     }),
     useSensor(TouchSensor, {
@@ -182,20 +155,16 @@ export default function KanbanBoard() {
 
     if (!sourceColId || !destColId) return;
 
-    // Handle scrap logic
-    if (destColId === "scrap") {
+    // Handle scrap logic confirmation
+    if (destColId === "scrap" && sourceColId !== "scrap") {
       const confirmScrap = window.confirm(
-        "Moving to Scrap will mark this equipment as no longer usable. Continue?"
+        "Are you sure you want to Cancel/Scrap this request?"
       );
-      
-      if (!confirmScrap) {
-        return;
-      }
+      if (!confirmScrap) return;
     }
 
     // Get the item being moved
     const movedItem = columns[sourceColId]?.find(i => i.id === active.id);
-    
     if (!movedItem) return;
 
     // Move between same column (reordering)
@@ -207,11 +176,7 @@ export default function KanbanBoard() {
       if (oldIndex !== newIndex && newIndex !== -1) {
         const [moved] = items.splice(oldIndex, 1);
         items.splice(newIndex, 0, moved);
-        
-        setColumns({
-          ...columns,
-          [sourceColId]: items,
-        });
+        setColumns({ ...columns, [sourceColId]: items });
       }
       return;
     }
@@ -226,20 +191,22 @@ export default function KanbanBoard() {
     const [moved] = sourceItems.splice(itemIndex, 1);
     destItems.push(moved);
 
+    // Optimistic UI Update
     setColumns({
       ...columns,
       [sourceColId]: sourceItems,
       [destColId]: destItems,
     });
 
-    // Save the state change to backend
+    // 💾 Save the state change to backend
     updateRequestState(movedItem.id, destColId);
-    console.log(`Request ${active.id} moved from ${sourceColId} to ${destColId}`);
   }
 
   async function updateRequestState(requestId, columnId) {
     try {
-      // Map column IDs to backend state values
+      const token = localStorage.getItem("token");
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
       const stateMap = {
         'new': 'draft',
         'progress': 'in_progress',
@@ -249,15 +216,17 @@ export default function KanbanBoard() {
       
       const newState = stateMap[columnId] || 'draft';
       
-      await axios.patch(`http://localhost:5000/api/maintenance/${requestId}/state`, {
-        state: newState
-      });
+      // NOTE: Ensure you have a PATCH route on backend for this!
+      await axios.patch(`http://localhost:5000/api/maintenance/${requestId}/state`, 
+        { state: newState }, 
+        config
+      );
       
-      console.log(`Request ${requestId} state updated to ${newState}`);
+      console.log(`Request ${requestId} saved as ${newState}`);
     } catch (error) {
       console.error('Error updating request state:', error);
-      // Refresh the data if update fails
-      fetchRequests();
+      alert("Failed to save changes. Please refresh.");
+      fetchRequests(); // Revert on error
     }
   }
 
@@ -303,7 +272,7 @@ export default function KanbanBoard() {
           </div>
           
           <div className="filter-options">
-            {["EQ-001", "EQ-002", "EQ-003"].map(eq => (
+            {["EQ-001", "EQ-002", "EQ-003", "EQ-004"].map(eq => (
               <button
                 key={eq}
                 className={`filter-chip ${equipmentFilter === eq ? "active" : ""}`}
@@ -321,7 +290,7 @@ export default function KanbanBoard() {
         <div className="active-filter-badge">
           <FiFilter size={14} />
           Showing requests for: <strong>{equipmentFilter}</strong>
-          <button onClick={clearFilter} style={{ marginLeft: "8px" }}>
+          <button onClick={clearFilter} style={{ marginLeft: "8px", border:"none", background:"none", cursor:"pointer" }}>
             <FiX size={16} />
           </button>
         </div>
@@ -339,20 +308,13 @@ export default function KanbanBoard() {
           ))}
         </div>
 
-        {/* Drag Overlay - Shows card while dragging */}
         <DragOverlay>
           {activeItem ? (
             <div className="kanban-card dragging-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-                <span className="card-title">
-                  {activeItem.title}
-                </span>
+                <span className="card-title">{activeItem.title}</span>
               </div>
-              <div style={{ 
-                fontSize: "12px", 
-                color: "#64748b", 
-                marginTop: "6px"
-              }}>
+              <div style={{ fontSize: "12px", color: "#64748b", marginTop: "6px" }}>
                 {activeItem.equipmentName} ({activeItem.equipment})
               </div>
               <PriorityBadge value={activeItem.priority} />
@@ -360,7 +322,7 @@ export default function KanbanBoard() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <FiUser /> {activeItem.tech}
                 </div>
-                <span>ID: {activeItem.id}</span>
+                <span>#{activeItem.id.substring(activeItem.id.length-4)}</span>
               </div>
             </div>
           ) : null}
@@ -376,38 +338,30 @@ function KanbanColumn({ id, items }) {
   const { setNodeRef } = useSortable({ id });
   
   const titleMap = {
-    new: "New Requests",
+    new: "Open / To Do",
     progress: "In Progress",
-    repaired: "Repaired",
-    scrap: "Scrapped"
+    repaired: "Completed / Done",
+    scrap: "Cancelled / Scrap"
   };
 
   return (
-    <div 
-      ref={setNodeRef}
-      className="kanban-column"
-    >
+    <div ref={setNodeRef} className="kanban-column">
       <div className="column-header">
         <span className="column-title">
           <span style={{ 
-            width: 8, 
-            height: 8, 
-            borderRadius: "50%", 
-            background: getColumnColor(id) 
+            width: 8, height: 8, borderRadius: "50%", 
+            background: getColumnColor(id), display: "inline-block", marginRight: 8
           }}></span>
           {titleMap[id]}
         </span>
         <span className="task-count">{items.length}</span>
       </div>
 
-      <SortableContext
-        items={items.map((i) => i.id)}
-        strategy={verticalListSortingStrategy}
-      >
+      <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
         <div className="column-content">
           {items.length === 0 ? (
             <div className="empty-placeholder">
-              {id === "scrap" ? "No scrapped items" : "Drop items here"}
+              {id === "scrap" ? "Drag cancelled items here" : "No tickets"}
             </div>
           ) : (
             items.map((item) => <KanbanCard key={item.id} item={item} />)
@@ -422,15 +376,7 @@ function KanbanColumn({ id, items }) {
 
 function KanbanCard({ item }) {
   const navigate = useNavigate();
-  
-  const {
-    setNodeRef,
-    attributes,
-    listeners,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id });
+  const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({ id: item.id });
 
   const isOverdue = item.dueDate && new Date(item.dueDate) < new Date();
 
@@ -442,51 +388,26 @@ function KanbanCard({ item }) {
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className="kanban-card"
-    >
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="kanban-card">
       {isOverdue && (
         <div className="overdue-strip">
-          <FiAlertCircle size={14} />
-          OVERDUE
+          <FiAlertCircle size={14} /> OVERDUE
         </div>
       )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-        <span 
-          className="card-title" 
-          onClick={(e) => {
+        <span className="card-title" onClick={(e) => {
             e.stopPropagation();
-            navigate(`/maintenance/${item.id}`);
-          }}
-        >
+            // navigate(`/maintenance/${item.id}`); // Uncomment if you have a detail page
+          }}>
           {item.title}
         </span>
-        <button 
-          style={{ 
-            border: 'none', 
-            background: 'transparent', 
-            cursor: 'pointer', 
-            color: '#94a3b8' 
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <button style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#94a3b8' }}>
           <FiMoreHorizontal />
         </button>
       </div>
 
-      <div style={{ 
-        fontSize: "12px", 
-        color: "#64748b", 
-        marginTop: "6px",
-        display: "flex",
-        alignItems: "center",
-        gap: "4px"
-      }}>
+      <div style={{ fontSize: "12px", color: "#64748b", marginTop: "6px" }}>
         {item.equipmentName} ({item.equipment})
       </div>
 
@@ -496,16 +417,11 @@ function KanbanCard({ item }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <FiUser /> {item.tech}
         </div>
-        <span>ID: {item.id}</span>
+        <span>#{item.id.substring(item.id.length-4)}</span>
       </div>
 
       {item.dueDate && (
-        <div style={{ 
-          fontSize: "11px", 
-          color: isOverdue ? "#991b1b" : "#64748b",
-          marginTop: "8px",
-          fontWeight: isOverdue ? "600" : "normal"
-        }}>
+        <div style={{ fontSize: "11px", color: isOverdue ? "#991b1b" : "#64748b", marginTop: "8px", fontWeight: isOverdue ? "600" : "normal" }}>
           Due: {new Date(item.dueDate).toLocaleDateString()}
         </div>
       )}
@@ -523,33 +439,26 @@ function getColumnColor(id) {
 }
 
 function priorityColor(p) {
-  if (p === "High") return "#ef4444";
+  if (p === "High" || p === "Critical") return "#ef4444";
   if (p === "Medium") return "#f59e0b";
-  return "#22c55e";
+  return "#22c55e"; // Low
 }
 
 function PriorityBadge({ value }) {
   const map = {
+    Critical: { bg: "#7f1d1d", text: "#ffffff" },
     High: { bg: "#fee2e2", text: "#991b1b" },
     Medium: { bg: "#fef3c7", text: "#92400e" },
     Low: { bg: "#dcfce7", text: "#166534" },
   };
-
-  const style = map[value];
+  const style = map[value] || map.Low;
 
   return (
-    <span
-      style={{
-        background: style.bg,
-        color: style.text,
-        padding: "2px 8px",
-        borderRadius: "4px",
-        fontSize: "11px",
-        fontWeight: "600",
-        display: "inline-block",
-        marginTop: "8px",
-      }}
-    >
+    <span style={{
+        background: style.bg, color: style.text, padding: "2px 8px", 
+        borderRadius: "4px", fontSize: "11px", fontWeight: "600", 
+        display: "inline-block", marginTop: "8px",
+    }}>
       {value}
     </span>
   );

@@ -1,44 +1,29 @@
 import mongoose from "mongoose";
 
-const equipmentSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true },
-    serialNumber: { type: String, required: true, unique: true },
-    status: {
-      type: String,
-      enum: ["active", "scrapped"],
-      default: "active",
-    },
-    // Tracking fields
-    department: { type: String, required: true },
-    assignedTo: { 
-      type: String, // Employee name
-      default: null 
-    },
-    // Purchase & Warranty
-    purchaseDate: { type: Date, required: true },
-    warrantyExpiry: { type: Date },
-    // Location
-    location: { type: String, required: true },
-    // Team & Technician Assignment
-    team_id: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'Team',
-      required: true 
-    },
-    default_technician_id: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'User',
-      required: true 
-    },
-    // Additional details
-    category: { type: String },
-    manufacturer: { type: String },
-    model: { type: String },
-    specifications: { type: String },
-    notes: { type: String },
+const equipmentSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  code: { type: String, required: true, unique: true }, // Serial Number/ID
+  location: { type: String, required: true },
+  department: { type: String, required: true },
+  status: { 
+    type: String, 
+    enum: ['operational', 'maintenance', 'down', 'scrapped'], 
+    default: 'operational' 
   },
-  { timestamps: true }
-);
+  
+  // --- NEW FIELDS ADDED ---
+  manufacturer: { type: String },
+  model: { type: String },
+  category: { type: String },
+  purchaseDate: { type: Date },
+  warrantyExpiry: { type: Date },
+  specifications: { type: String },
+  notes: { type: String },
+  image: { type: String },
+  
+  // Relations (Optional for now, but good to have ready)
+  team_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Team' }, 
+  default_technician_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+}, { timestamps: true });
 
 export default mongoose.model("Equipment", equipmentSchema);

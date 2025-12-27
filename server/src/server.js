@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes.js"; 
 import maintenanceRoutes from "./routes/maintenance.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js"; // 
+import equipmentRoutes from "./routes/equipment.routes.js";
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ connectDB();
 app.use("/api/auth", authRoutes);
 app.use("/api/maintenance", maintenanceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/equipment", equipmentRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
