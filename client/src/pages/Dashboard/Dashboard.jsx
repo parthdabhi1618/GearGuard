@@ -2,23 +2,20 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FiTool, FiAlertCircle, FiClock, FiTrash2, FiArrowRight, FiPlus } from "react-icons/fi";
-
-// 1. Import your new ProfileDropdown instead of Header
 import ProfileDropdown from "../../components/ProfileDropdown"; 
 import "./Dashboard.css";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   
-  // Data State
   const [stats, setStats] = useState({ equipment: 0, open: 0, overdue: 0, scrapped: 0 });
   const [recent, setRecent] = useState([]);
-  const [loading, setLoading] = useState(true);
-  
-  // User State (Just for the "Welcome" text)
+  const [loading, setLoading] = useState(true); 
   const [user, setUser] = useState({ name: "" });
 
   useEffect(() => {
+    // 1. Check Login on Load
+    const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
 
     if (!token) {
@@ -29,55 +26,87 @@ export default function Dashboard() {
     if (storedUser) setUser(JSON.parse(storedUser));
 
     fetchDashboardData();
+    
+    // Auto-refresh every 30 seconds
     const interval = setInterval(fetchDashboardData, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [navigate]);
 
   async function fetchDashboardData() {
     try {
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
+      // 🔴 FIX: WE MUST DEFINE TOKEN HERE BEFORE USING IT
+      const token = localStorage.getItem("token"); 
 
-      setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/maintenance');
+      if (!token) return; // Safety check
+
+      const config = {
+        headers: { Authorization: `Bearer ${token}` } // Now 'token' exists!
+      };
+
+      // Don't trigger loading spinner on background refreshes to avoid flickering
+      // setLoading(true); 
+
+      const response = await axios.get('http://localhost:5000/api/maintenance', config);
+      
+      // 🛡️ CRASH PREVENTION: Ensure data is an array
+      if (!Array.isArray(response.data)) {
+        console.error("API returned invalid format:", response.data);
+        return;
+      }
+
       const requests = response.data;
       
+      // Calculate Stats
       const open = requests.filter(r => r.state === 'draft' || r.state === 'assigned').length;
       const inProgress = requests.filter(r => r.state === 'in_progress').length;
       const scrapped = requests.filter(r => r.state === 'cancelled').length;
+      
       const now = new Date();
-      const overdue = requests.filter(r => r.scheduled_date && new Date(r.scheduled_date) < now && !['completed', 'cancelled'].includes(r.state)).length;
+      const overdue = requests.filter(r => {
+        return r.scheduled_date && 
+               new Date(r.scheduled_date) < now && 
+               !['completed', 'cancelled'].includes(r.state);
+      }).length;
       
-      setStats({ equipment: 18, open: open + inProgress, overdue, scrapped });
+      setStats({
+        equipment: 18, 
+        open: open + inProgress,
+        overdue: overdue,
+        scrapped: scrapped,
+      });
       
+      // Get Recent 3
       const recentRequests = requests
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 3)
         .map(r => ({
-          id: r._id,
-          title: r.name,
+          id: r._id || "Unknown",
+          title: r.name || "Untitled Request",
           status: r.state === 'draft' ? 'Open' : r.state === 'in_progress' ? 'In Progress' : r.state === 'completed' ? 'Done' : 'Cancelled',
           priority: r.priority === '0' ? 'Low' : r.priority === '1' ? 'Medium' : r.priority === '2' ? 'High' : 'Critical'
         }));
       
       setRecent(recentRequests);
+      setLoading(false);
+
     } catch (error) {
-      console.error("Error fetching data", error);
-    } finally {
+      console.error("Error fetching dashboard data:", error);
+      
+      // Only logout if unauthorized (token invalid)
+      if (error.response && error.response.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
       setLoading(false);
     }
   }
 
   return (
     <div className="dashboard-layout">
-      {/* NO <Header /> HERE - We put it inside the container */}
-
       <div className="dashboard-container">
         
-        {/* --- REORGANIZED HEADER SECTION --- */}
+        {/* HEADER */}
         <div className="dashboard-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
-          
-          {/* LEFT: Title */}
           <div className="dashboard-title">
             <h1 style={{ margin: 0, fontSize: "24px" }}>Dashboard</h1>
             <p style={{ margin: "5px 0 0 0", color: "#64748b" }}>
@@ -85,10 +114,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* RIGHT: Actions & Profile */}
           <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-            
-            {/* Create Button */}
             <button
               onClick={() => navigate("/maintenance/new")}
               className="primary-btn"
@@ -96,15 +122,11 @@ export default function Dashboard() {
             >
               <FiPlus size={18} /> Create Request
             </button>
-
-            {/* Profile Dropdown (Sits nicely next to button) */}
             <ProfileDropdown />
-            
           </div>
         </div>
-        {/* ---------------------------------- */}
 
-        {/* STATS GRID */}
+        {/* STATS */}
         <div className="stats-grid">
           <ModernStatCard title="Total Equipment" value={stats.equipment} color="#3b82f6" icon={<FiTool size={22} />} onClick={() => navigate("/equipment")} />
           <ModernStatCard title="Open Requests" value={stats.open} color="#f59e0b" icon={<FiAlertCircle size={22} />} onClick={() => navigate("/kanban")} />
@@ -112,7 +134,7 @@ export default function Dashboard() {
           <ModernStatCard title="Scrapped" value={stats.scrapped} color="#64748b" icon={<FiTrash2 size={22} />} onClick={() => navigate("/equipment")} />
         </div>
 
-        {/* RECENT MAINTENANCE */}
+        {/* RECENT LIST */}
         <div className="section-header">
           <h3>Recent Maintenance</h3>
           <span onClick={() => navigate("/kanban")} className="view-all-link">View all <FiArrowRight size={16} /></span>
@@ -131,7 +153,7 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {recent.length === 0 ? (
-                  <tr><td colSpan="4" style={{ textAlign: "center", padding: "30px", color: "#94a3b8" }}>{loading ? "Loading..." : "No requests yet"}</td></tr>
+                  <tr><td colSpan="4" style={{ textAlign: "center", padding: "30px", color: "#94a3b8" }}>{loading ? "Loading..." : "No maintenance requests yet"}</td></tr>
                 ) : (
                   recent.map((r) => (
                     <tr key={r.id}>
@@ -151,7 +173,7 @@ export default function Dashboard() {
   );
 }
 
-// ... Internal Components (ModernStatCard, StatusBadge, PriorityBadge) remain exactly the same as before ...
+// ... Internal Components ...
 function ModernStatCard({ title, value, color, icon, onClick }) {
   return (
     <div className="stat-card" onClick={onClick}>
