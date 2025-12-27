@@ -71,7 +71,8 @@ export default function Reports() {
   };
 
   const handleExport = () => {
-    alert(`Exporting ${reportOptions.find(r => r.value === selectedReport)?.label}...`);
+    const reportLabel = reportOptions.find((r) => r.value === selectedReport)?.label;
+    console.info(`Exporting ${reportLabel || "selected report"}...`);
   };
 
   const renderReport = () => {

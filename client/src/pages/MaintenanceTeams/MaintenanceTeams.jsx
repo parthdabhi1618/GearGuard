@@ -43,17 +43,27 @@ export default function MaintenanceTeams() {
 
   const handleAddTeam = () => {
     if (formData.name.trim()) {
-      setTeams((prev) => [
-        ...prev,
-        {
-          id: `T-${String(teams.length + 1).padStart(3, "0")}`,
-          name: formData.name,
-          description: formData.description,
-          members: 0,
-          status: "Active",
-          technicians: [],
-        },
-      ]);
+      setTeams((prev) => {
+        const maxNumericId = prev.reduce((max, team) => {
+          const match = typeof team.id === "string" ? team.id.match(/^T-(\d+)$/) : null;
+          const numericPart = match ? parseInt(match[1], 10) : 0;
+          return numericPart > max ? numericPart : max;
+        }, 0);
+        const nextIdNumber = maxNumericId + 1;
+        const nextId = `T-${String(nextIdNumber).padStart(3, "0")}`;
+
+        return [
+          ...prev,
+          {
+            id: nextId,
+            name: formData.name,
+            description: formData.description,
+            members: 0,
+            status: "Active",
+            technicians: [],
+          },
+        ];
+      });
       setFormData({ name: "", description: "" });
       setIsModalOpen(false);
     }

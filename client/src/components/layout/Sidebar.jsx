@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from "react-router-dom";
-import { FiHome, FiTool, FiPlusCircle, FiColumns, FiCalendar, FiX, FiChevronDown, FiBarChart3, FiSettings, FiBell, FiUsers } from "react-icons/fi"; 
+import { FiHome, FiTool, FiPlusCircle, FiColumns, FiCalendar, FiX, FiChevronDown, FiBarChart3, FiSettings, FiBell } from "react-icons/fi"; 
 import './Sidebar.css';
 
 export default function Sidebar({ isOpen, onClose }) {

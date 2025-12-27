@@ -397,5 +397,10 @@
   
   .nav-link.active::before {
     display: block; /* Show active indicator in drawer */
-  }
+  } /* Closing brace for the active indicator */
+} 
+
+/* Smooth transitions for all elements */
+.sidebar {
+  transition: all 0.3s ease; /* Example property to complete the selector */
 }
