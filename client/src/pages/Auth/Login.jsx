@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { FiMail, FiLock, FiArrowRight, FiShield, FiEye, FiEyeOff } from "react-icons/fi";
+import { FiMail, FiLock, FiArrowRight, FiShield, FiAlertCircle } from "react-icons/fi"; // Added Alert Icon
+import axios from "axios"; // Import Axios
 import "./Login.css";
 
 export default function Login() {
@@ -9,17 +10,39 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(""); // State for error messages
 
-  function handleLogin(e) {
+  async function handleLogin(e) {
     e.preventDefault();
     setLoading(true);
+    setError(""); // Clear previous errors
 
-    // Simulate API call
-    setTimeout(() => {
-      localStorage.setItem("auth", "true");
+    try {
+      // 🚀 REAL BACKEND CONNECTION
+      const response = await axios.post("http://localhost:5000/api/auth/login", {
+        email: email,
+        password: password
+      });
+
+      // If successful, the backend sends a token and user info
+      if (response.data.token) {
+        // 1. Save Token & User Info to LocalStorage
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify({
+          name: response.data.name,
+          role: response.data.role
+        }));
+
+        // 2. Redirect to Dashboard
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      // Handle Errors (Wrong password, user not found, etc.)
+      const errorMsg = err.response?.data?.message || "Login failed. Please check your details.";
+      setError(errorMsg);
+    } finally {
       setLoading(false);
-      navigate("/");
-    }, 800);
+    }
   }
 
   return (
@@ -53,6 +76,23 @@ export default function Login() {
             <p>Please enter your details to sign in.</p>
           </div>
 
+          {/* 🔴 Error Message Display */}
+          {error && (
+            <div style={{ 
+              backgroundColor: "#fee2e2", 
+              color: "#ef4444", 
+              padding: "10px", 
+              borderRadius: "8px", 
+              fontSize: "14px", 
+              marginBottom: "15px", 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "8px" 
+            }}>
+              <FiAlertCircle /> {error}
+            </div>
+          )}
+
           <form onSubmit={handleLogin}>
             
             {/* Email Input */}
@@ -64,6 +104,7 @@ export default function Login() {
                   placeholder="name@company.com"
                   className="modern-input"
                   required
+                  value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
                 <FiMail className="input-icon" />
@@ -79,6 +120,7 @@ export default function Login() {
                   placeholder="••••••••"
                   className="modern-input"
                   required
+                  value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
