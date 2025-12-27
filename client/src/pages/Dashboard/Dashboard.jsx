@@ -20,16 +20,9 @@ export default function Dashboard() {
   // State for User Info
   const [user, setUser] = useState({ name: "", role: "" });
 
-  // 1. Check Authentication on Mount
+  // 1. Check Authentication on Mount and Fetch Data
   useEffect(() => {
-    const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-
-    if (!token) {
-      navigate("/login"); // 🔒 Redirect if not logged in
-      return;
-    }
-
     if (storedUser) {
       setUser(JSON.parse(storedUser)); // Set user name for display
     }
@@ -39,21 +32,12 @@ export default function Dashboard() {
     // Refresh data every 30 seconds
     const interval = setInterval(fetchDashboardData, 30000);
     return () => clearInterval(interval);
-  }, [navigate]);
+  }, []);
 
   async function fetchDashboardData() {
     try {
-      const token = localStorage.getItem("token"); // Get token again for the request
-      
-      // 2. Attach Token to the Request
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}` // <--- KEY CHANGE: Sends the ID card
-        }
-      };
-
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/maintenance', config);
+      const response = await axios.get('http://localhost:5000/api/maintenance');
       const requests = response.data;
       
       // Calculate statistics (Same logic as before)
@@ -89,11 +73,6 @@ export default function Dashboard() {
       setRecent(recentRequests);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
-      
-      // 🔒 If token is invalid (401), force logout
-      if (error.response && error.response.status === 401) {
-        handleLogout();
-      }
     } finally {
       setLoading(false);
     }
