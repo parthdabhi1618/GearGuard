@@ -18,7 +18,4 @@ const maintenanceRequestSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 
-// 🛠️ SAFETY CHECK: Only create model if it doesn't exist
-const MaintenanceRequest = mongoose.models.MaintenanceRequest || mongoose.model("MaintenanceRequest", maintenanceRequestSchema);
-
-export default MaintenanceRequest;
+export default mongoose.model('MaintenanceRequest', maintenanceRequestSchema);

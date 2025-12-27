@@ -4,7 +4,6 @@ import { validateTechnicianTeam, generateRequestName } from '../utils/autoFillLo
 export const getRequests = async (req, res) => {
   try {
     const requests = await MaintenanceRequest.find()
-      .populate('equipment_id team_id technician_id category_id')
       .sort({ scheduled_date: -1, priority: -1 });
     res.json(requests);
   } catch (error) {
