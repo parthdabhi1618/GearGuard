@@ -1,0 +1,265 @@
+/* Sidebar.css */
+.sidebar {
+  width: 230px;
+  background: #ffffff;
+  height: calc(100vh - 60px); /* Adjust based on Navbar height */
+  padding: 20px 12px;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  overflow-y: auto; /* Scroll if content is too long */
+  z-index: 900;
+}
+
+/* Category Labels (e.g., "Menu", "Workspace") */
+.menu-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8; /* Slate-400 */
+  margin: 20px 0 10px 12px;
+  font-weight: 700;
+}
+
+/* Link Styling */
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 6px;
+  border-radius: 12px; /* Softer rounded corners */
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155; /* Normal text color */
+  text-decoration: none;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-icon {
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+/* Hover Effects */
+.nav-link:hover {
+  background-color: #f1f5f9; /* Slate-100 */
+  color: #1d4ed8;
+  transform: translateX(4px); /* Subtle slide right */
+}
+
+.nav-link:hover .nav-icon {
+  transform: scale(1.1); /* Icon pops slightly */
+}
+
+/* Active State */
+.nav-link.active {
+  background-color: #e0e7ff; /* User's preferred active bg */
+  color: #1d4ed8; /* User's preferred active text */
+  font-weight: 600;
+}
+
+.nav-link.active::before {
+  /* Active indicator line on the left */
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 20px;
+  width: 3px;
+  background-color: #1d4ed8;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+/* --- Responsive Breakpoints --- */
+
+/* Tablet View: Collapse to Icons (640px to 1024px) */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 80px; /* Slim width */
+    padding: 20px 10px;
+    align-items: center;
+  }
+
+  .menu-label,
+  .link-text {
+    display: none; /* Hide text */
+  }
+
+  .nav-link {
+    justify-content: center;
+    padding: 12px;
+    width: 48px;
+    height: 48px;
+  }
+  
+  .nav-link:hover {
+    transform: none; /* Disable slide on tablet */
+    background-color: #e0e7ff;
+  }
+  
+  .nav-link.active::before {
+    display: none; /* Remove side line in icon mode */
+  }
+}
+
+/* Mobile View: Bottom Navigation Bar (< 640px) */
+@media (max-width: 640px) {
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto; /* Auto height for bottom bar */
+    flex-direction: row; /* Horizontal layout */
+    justify-content: space-around;
+    padding: 10px 0;
+    border-right: none;
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  }
+
+  .menu-label {
+    display: none;
+  }
+
+  .nav-link {
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    margin-bottom: 0;
+    border-radius: 8px;
+    font-size: 10px; /* Smaller text for mobile */
+  }
+
+  .nav-icon {
+    font-size: 20px;
+  }
+  
+  .link-text {
+    display: block; /* Show text again on mobile but small */
+  }
+
+  .nav-link:hover {
+    transform: none;
+    background: transparent;
+  }
+  
+  .nav-link.active {
+    background: transparent; /* Remove bg on mobile to keep it clean */
+    color: #1d4ed8;
+  }
+  
+  .nav-link.active::before {
+    display: none;
+  }
+}
+
+/* ... Keep Desktop/Tablet styles from previous response ... */
+
+/* --- Mobile View (Drawer Mode) --- */
+.sidebar-overlay {
+  display: none; /* Hidden on desktop */
+}
+
+.sidebar-mobile-header {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  /* 1. The Overlay Backdrop */
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6); /* Dark dimming effect */
+    z-index: 1040; /* Behind sidebar, above content */
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* 2. The Sidebar Drawer */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px; /* Full drawer width */
+    background: #ffffff;
+    z-index: 1050; /* Topmost layer */
+    transform: translateX(-100%); /* Hidden off-screen to the left */
+    box-shadow: none;
+    padding-top: 0;
+  }
+
+  /* When 'open' class is added via React */
+  .sidebar.open {
+    transform: translateX(0); /* Slide in */
+    box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+  }
+
+  /* 3. Mobile Specific Header inside Sidebar */
+  .sidebar-mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 10px 20px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+  }
+
+  .brand-name-mobile {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+  }
+
+  /* Reset layout for drawer items */
+  .sidebar {
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  
+  .menu-label {
+    display: block; /* Show labels in drawer */
+  }
+
+  .nav-link {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 12px 16px;
+    width: 100%;
+    height: auto;
+  }
+  
+  .link-text {
+    display: block;
+    font-size: 14px;
+  }
+  
+  .nav-link.active::before {
+    display: block; /* Show active indicator in drawer */
+  }
+}

@@ -1,51 +1,55 @@
+import React from 'react';
 import { NavLink } from "react-router-dom";
-import {
-  FiHome,
-  FiTool,
-  FiPlusCircle,
-  FiColumns,
-  FiCalendar,
-} from "react-icons/fi";
+import { FiHome, FiTool, FiPlusCircle, FiColumns, FiCalendar, FiX } from "react-icons/fi"; // Added FiX for close button
+import './Sidebar.css';
 
-export default function Sidebar() {
+// Accept 'isOpen' and 'onClose' props
+export default function Sidebar({ isOpen, onClose }) {
   return (
-    <div
-      style={{
-        width: "230px",
-        background: "#ffffff",
-        height: "calc(100vh - 60px)",
-        padding: "20px",
-        borderRight: "1px solid #e2e8f0",
-      }}
-    >
-      <Menu to="/" icon={<FiHome />} text="Dashboard" />
-      <Menu to="/equipment" icon={<FiTool />} text="Equipment" />
-      <Menu to="/maintenance/new" icon={<FiPlusCircle />} text="New Maintenance" />
-      <Menu to="/kanban" icon={<FiColumns />} text="Kanban Board" />
-      <Menu to="/calendar" icon={<FiCalendar />} text="Calendar" />
-    </div>
+    <>
+      {/* Mobile Overlay Backdrop */}
+      <div 
+        className={`sidebar-overlay ${isOpen ? 'active' : ''}`} 
+        onClick={onClose}
+      />
+
+      <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+        
+        {/* Mobile Header with Close Button */}
+        <div className="sidebar-mobile-header">
+          <span className="brand-name-mobile">GearGuard</span>
+          <button className="close-btn" onClick={onClose}>
+            <FiX />
+          </button>
+        </div>
+
+        <p className="menu-label">Menu</p>
+        <Menu to="/" icon={<FiHome />} text="Dashboard" onClick={onClose} />
+
+        <p className="menu-label">Workspace</p>
+        <Menu to="/equipment" icon={<FiTool />} text="Equipment" onClick={onClose} />
+        <Menu to="/kanban" icon={<FiColumns />} text="Kanban Board" onClick={onClose} />
+        <Menu to="/calendar" icon={<FiCalendar />} text="Calendar" onClick={onClose} />
+
+        <div style={{ marginTop: 'auto' }}>
+          <p className="menu-label">Actions</p>
+          <Menu to="/maintenance/new" icon={<FiPlusCircle />} text="New Maintenance" onClick={onClose} />
+        </div>
+      </div>
+    </>
   );
 }
 
-function Menu({ to, icon, text }) {
+// Updated Menu to handle closing sidebar when a link is clicked
+function Menu({ to, icon, text, onClick }) {
   return (
     <NavLink
       to={to}
-      style={({ isActive }) => ({
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        padding: "10px 12px",
-        marginBottom: "8px",
-        borderRadius: "8px",
-        fontSize: "14px",
-        background: isActive ? "#e0e7ff" : "transparent",
-        color: isActive ? "#1d4ed8" : "#334155",
-        transition: "0.2s",
-      })}
+      onClick={onClick}
+      className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}
     >
-      {icon}
-      {text}
+      <span className="nav-icon">{icon}</span>
+      <span className="link-text">{text}</span>
     </NavLink>
   );
 }
