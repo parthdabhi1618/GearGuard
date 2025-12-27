@@ -156,12 +156,148 @@
   
   .nav-link.active::before {
     display: none;
+/* --- SUBMENU STYLES --- */
+.menu-item {
+  position: relative;
+}
+
+.menu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 6px;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.menu-toggle:hover {
+  background-color: #f1f5f9;
+  color: #1d4ed8;
+}
+
+.menu-toggle .nav-icon {
+  font-size: 18px;
+}
+
+.chevron {
+  transition: transform 0.3s ease;
+  color: #94a3b8;
+}
+
+.chevron.expanded {
+  transform: rotate(180deg);
+}
+
+.submenu {
+  background: #f8fafc;
+  border-left: 2px solid #e0e7ff;
+  margin-left: 12px;
+  padding: 8px 0;
+  border-radius: 8px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
   }
 }
 
-/* ... Keep Desktop/Tablet styles from previous response ... */
+.submenu-link {
+  display: block;
+  padding: 10px 16px 10px 24px;
+  color: #64748b;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  position: relative;
+}
 
-/* --- Mobile View (Drawer Mode) --- */
+.submenu-link:hover {
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.submenu-link.active {
+  color: #1d4ed8;
+  background: #eff6ff;
+  font-weight: 600;
+}
+
+.submenu-link.active::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 16px;
+  background: #1d4ed8;
+  border-radius: 2px;
+}
+
+/* --- RESPONSIVE SUBMENU --- */
+@media (max-width: 1024px) {
+  .submenu {
+    display: none;
+  }
+  
+  .menu-toggle .link-text {
+    display: none;
+  }
+  
+  .menu-toggle {
+    justify-content: center;
+    padding: 12px;
+    width: 48px;
+    height: 48px;
+  }
+  
+  .chevron {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .submenu {
+    background: transparent;
+    border-left: none;
+    margin-left: 0;
+    padding: 0;
+  }
+  
+  .submenu-link {
+    padding: 10px 16px 10px 40px;
+    font-size: 13px;
+  }
+  
+  .submenu-link.active::before {
+    left: 24px;
+  }
+}
+
 .sidebar-overlay {
   display: none; /* Hidden on desktop */
 }

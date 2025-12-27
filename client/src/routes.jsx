@@ -12,8 +12,13 @@ import EquipmentDetails from "./pages/Equipment/EquipmentDetails/EquipmentDetail
 import EquipmentForm from "./pages/Equipment/EquipmentForm/EquipmentForm.jsx";
 import MaintenanceForm from "./pages/Maintenance/MaintenanceForm.jsx";
 import MaintenanceDetails from "./pages/Maintenance/MaintenanceDetails.jsx";
+import MaintenanceList from "./pages/Maintenance/MaintenanceList.jsx";
+import MaintenanceTeams from "./pages/MaintenanceTeams/MaintenanceTeams.jsx";
 import KanbanBoard from "./pages/Kanban/KanbanBoard.jsx";
 import MaintenanceCalendar from "./pages/Calendar/MaintenanceCalendar.jsx";
+import Reports from "./pages/Reports/Reports.jsx";
+import Settings from "./pages/Settings/Settings.jsx";
+import Notifications from "./pages/Notifications/Notifications.jsx";
 
 export default function AppRoutes() {
   return (
@@ -69,6 +74,15 @@ export default function AppRoutes() {
       />
 
       <Route
+        path="/maintenance"
+        element={
+          <ProtectedRoute>
+            <MaintenanceList />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/maintenance/new"
         element={
           <ProtectedRoute>
@@ -87,6 +101,15 @@ export default function AppRoutes() {
       />
 
       <Route
+        path="/teams"
+        element={
+          <ProtectedRoute>
+            <MaintenanceTeams />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/kanban"
         element={
           <ProtectedRoute>
@@ -100,6 +123,33 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <MaintenanceCalendar />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute>
+            <Reports />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <Notifications />
           </ProtectedRoute>
         }
       />
