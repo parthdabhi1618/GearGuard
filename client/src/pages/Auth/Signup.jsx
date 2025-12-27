@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { FiUser, FiMail, FiLock, FiArrowRight, FiShield } from "react-icons/fi";
+import { FiUser, FiMail, FiLock, FiArrowRight, FiShield, FiEye, FiEyeOff } from "react-icons/fi";
 import "./Signup.css";
 
 export default function Signup() {
@@ -11,6 +11,8 @@ export default function Signup() {
     password: "",
     confirmPassword: ""
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   function handleChange(e) {
@@ -103,14 +105,21 @@ export default function Signup() {
               <label className="input-label">Password</label>
               <div className="input-wrapper">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Create a password"
                   className="modern-input"
                   required
                   onChange={handleChange}
                 />
-                <FiLock className="input-icon" />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="password-toggle-btn"
+                  aria-label="Toggle password visibility"
+                >
+                  {showPassword ? <FiEyeOff /> : <FiEye />}
+                </button>
               </div>
             </div>
 
@@ -119,14 +128,21 @@ export default function Signup() {
               <label className="input-label">Confirm Password</label>
               <div className="input-wrapper">
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
                   placeholder="Repeat password"
                   className="modern-input"
                   required
                   onChange={handleChange}
                 />
-                <FiLock className="input-icon" />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="password-toggle-btn"
+                  aria-label="Toggle password visibility"
+                >
+                  {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+                </button>
               </div>
             </div>
 
