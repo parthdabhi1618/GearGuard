@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 export default function MaintenanceForm() {
   const equipmentList = [
-    { id: "EQ-001", name: "CNC Machine", team: "Mechanical", technician: "Ravi" },
-    { id: "EQ-002", name: "Air Conditioner", team: "Electrical", technician: "Amit" },
-    { id: "EQ-003", name: "Server Rack", team: "IT", technician: "Suresh" },
+    { id: "EQ-001", name: "CNC Machine", team: "Mechanical", tech: "Ravi" },
+    { id: "EQ-002", name: "Air Conditioner", team: "Electrical", tech: "Amit" },
+    { id: "EQ-003", name: "Server Rack", team: "IT", tech: "Suresh" },
   ];
 
   const [form, setForm] = useState({
@@ -12,11 +13,17 @@ export default function MaintenanceForm() {
     equipment: "",
     team: "",
     technician: "",
-    type: "Corrective",
-    priority: "Medium",
+    type: "",
+    priority: "",
     date: "",
     description: "",
   });
+
+  const [loading, setLoading] = useState(false);
+
+  function handleChange(e) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
 
   function handleEquipmentChange(e) {
     const selected = equipmentList.find(eq => eq.id === e.target.value);
@@ -24,77 +31,132 @@ export default function MaintenanceForm() {
       ...form,
       equipment: selected.id,
       team: selected.team,
-      technician: selected.technician,
+      technician: selected.tech,
     });
-  }
-
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
   function handleSubmit(e) {
     e.preventDefault();
-    alert("Maintenance Request Created (UI only)");
-    console.log(form);
+    setLoading(true);
+
+    setTimeout(() => {
+      alert("Maintenance request created successfully ✅");
+      setLoading(false);
+    }, 1200);
   }
 
+  const isDisabled = !form.title || !form.equipment || !form.type || !form.priority;
+
   return (
-    <div style={{ padding: "30px", maxWidth: "800px" }}>
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      style={{ padding: "30px", maxWidth: "900px" }}
+    >
+      {/* HEADER */}
       <h1>Create Maintenance Request</h1>
-      <p style={{ color: "#64748b" }}>
+      <p style={{ color: "#64748b", marginBottom: "25px" }}>
         Log corrective or preventive maintenance
       </p>
 
-      <form onSubmit={handleSubmit} style={formBox}>
-        <Input label="Title" name="title" onChange={handleChange} />
-
-        <Select
-          label="Equipment"
-          onChange={handleEquipmentChange}
-          options={equipmentList.map(eq => ({
-            value: eq.id,
-            label: `${eq.name} (${eq.id})`,
-          }))}
-        />
-
-        <Input label="Team" value={form.team} disabled />
-        <Input label="Technician" value={form.technician} disabled />
-
-        <div style={row}>
-          <Select
-            label="Type"
-            name="type"
+      {/* FORM CARD */}
+      <form onSubmit={handleSubmit} style={card}>
+        {/* BASIC INFO */}
+        <Section title="Basic Information">
+          <Input
+            label="Title"
+            name="title"
+            value={form.title}
             onChange={handleChange}
-            options={[
-              { value: "Corrective", label: "Corrective" },
-              { value: "Preventive", label: "Preventive" },
-            ]}
+            placeholder="e.g. Motor vibration issue"
           />
 
           <Select
-            label="Priority"
-            name="priority"
-            onChange={handleChange}
-            options={[
-              { value: "Low", label: "Low" },
-              { value: "Medium", label: "Medium" },
-              { value: "High", label: "High" },
-              { value: "Critical", label: "Critical" },
-            ]}
+            label="Equipment"
+            onChange={handleEquipmentChange}
+            options={equipmentList.map(eq => ({
+              value: eq.id,
+              label: `${eq.name} (${eq.id})`,
+            }))}
           />
+
+          <AutoFilled label="Team" value={form.team} />
+          <AutoFilled label="Technician" value={form.technician} />
+        </Section>
+
+        {/* MAINTENANCE DETAILS */}
+        <Section title="Maintenance Details">
+          <div style={{ display: "flex", gap: "20px" }}>
+            <Select
+              label="Type"
+              name="type"
+              onChange={handleChange}
+              options={[
+                { value: "Corrective", label: "Corrective" },
+                { value: "Preventive", label: "Preventive" },
+              ]}
+            />
+
+            <Select
+              label="Priority"
+              name="priority"
+              onChange={handleChange}
+              options={[
+                { value: "Low", label: "Low" },
+                { value: "Medium", label: "Medium" },
+                { value: "High", label: "High" },
+                { value: "Critical", label: "Critical" },
+              ]}
+            />
+          </div>
+
+          <Input
+            label="Scheduled Date"
+            type="date"
+            name="date"
+            onChange={handleChange}
+          />
+        </Section>
+
+        {/* DESCRIPTION */}
+        <Section title="Description">
+          <Textarea
+            label="Problem Description"
+            name="description"
+            onChange={handleChange}
+            placeholder="Describe the issue in detail..."
+          />
+        </Section>
+
+        {/* ACTION */}
+        <div style={{ textAlign: "right" }}>
+          <button
+            type="submit"
+            disabled={isDisabled || loading}
+            style={{
+              ...submitBtn,
+              opacity: isDisabled ? 0.5 : 1,
+            }}
+          >
+            {loading ? "Creating..." : "Create Request"}
+          </button>
         </div>
-
-        <Input label="Scheduled Date" type="date" name="date" onChange={handleChange} />
-
-        <Textarea label="Description" name="description" onChange={handleChange} />
-
-        <button style={submitBtn}>Create Request</button>
       </form>
-    </div>
+    </motion.div>
   );
 }
 
-/* ---------- Reusable Inputs ---------- */
+/* ---------- REUSABLE COMPONENTS ---------- */
+
+function Section({ title, children }) {
+  return (
+    <div style={{ marginBottom: "30px" }}>
+      <h3 style={{ marginBottom: "15px" }}>{title}</h3>
+      {children}
+    </div>
+  );
+}
 
 function Input({ label, ...props }) {
   return (
@@ -110,9 +172,11 @@ function Select({ label, options, ...props }) {
     <div style={field}>
       <label style={labelStyle}>{label}</label>
       <select {...props} style={input}>
-        <option>Select</option>
+        <option value="">Select</option>
         {options.map(o => (
-          <option key={o.value} value={o.value}>{o.label}</option>
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
         ))}
       </select>
     </div>
@@ -128,26 +192,36 @@ function Textarea({ label, ...props }) {
   );
 }
 
-/* ---------- Styles ---------- */
+function AutoFilled({ label, value }) {
+  return (
+    <div style={field}>
+      <label style={labelStyle}>{label}</label>
+      <input
+        value={value}
+        disabled
+        style={{
+          ...input,
+          background: "#f1f5f9",
+          border: "1px dashed #94a3b8",
+        }}
+      />
+    </div>
+  );
+}
 
-const formBox = {
+/* ---------- STYLES ---------- */
+
+const card = {
   background: "#ffffff",
   padding: "30px",
-  borderRadius: "12px",
-  marginTop: "20px",
-  boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
-};
-
-const row = {
-  display: "flex",
-  gap: "20px",
+  borderRadius: "14px",
+  boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
 };
 
 const field = {
   display: "flex",
   flexDirection: "column",
   marginBottom: "16px",
-  flex: 1,
 };
 
 const labelStyle = {
@@ -157,19 +231,20 @@ const labelStyle = {
 };
 
 const input = {
-  padding: "10px",
-  borderRadius: "6px",
+  padding: "11px",
+  borderRadius: "8px",
   border: "1px solid #cbd5e1",
   fontSize: "14px",
+  outline: "none",
 };
 
 const submitBtn = {
-  marginTop: "20px",
   background: "#2563eb",
   color: "#fff",
-  padding: "12px",
+  padding: "12px 20px",
   border: "none",
-  borderRadius: "8px",
+  borderRadius: "10px",
   fontSize: "15px",
   cursor: "pointer",
+  transition: "0.2s",
 };

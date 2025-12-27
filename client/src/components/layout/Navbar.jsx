@@ -4,15 +4,32 @@ export default function Navbar() {
       style={{
         height: "60px",
         background: "#0f172a",
-        color: "#fff",
+        color: "#ffffff",
         display: "flex",
         alignItems: "center",
-        padding: "0 24px",
         justifyContent: "space-between",
+        padding: "0 24px",
       }}
     >
       <h3>GearGuard</h3>
-      <span style={{ fontSize: "14px" }}>Admin</span>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div
+          style={{
+            width: "32px",
+            height: "32px",
+            borderRadius: "50%",
+            background: "#2563eb",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "14px",
+          }}
+        >
+          A
+        </div>
+        <span style={{ fontSize: "14px" }}>Admin</span>
+      </div>
     </div>
   );
 }

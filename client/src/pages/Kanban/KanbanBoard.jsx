@@ -1,109 +1,128 @@
+import { useState } from "react";
+import { motion } from "framer-motion";
 import { DndContext, closestCenter } from "@dnd-kit/core";
+import { useNavigate } from "react-router-dom";
 import {
-  // arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useState } from "react";
+
+/* ---------------- DATA ---------------- */
 
 const initialData = {
   open: [
-    { id: "1", title: "Motor Repair", priority: "High", tech: "Ravi" },
-    { id: "2", title: "AC Service", priority: "Low", tech: "Amit" },
+    { id: "1", title: "Motor Repair", tech: "Ravi", priority: "High" },
+    { id: "2", title: "AC Service", tech: "Amit", priority: "Low" },
   ],
   progress: [
-    { id: "3", title: "Server Check", priority: "Medium", tech: "Suresh" },
+    { id: "3", title: "Server Check", tech: "Suresh", priority: "Medium" },
   ],
   done: [],
 };
 
+/* ---------------- PAGE ---------------- */
+
 export default function KanbanBoard() {
   const [columns, setColumns] = useState(initialData);
-  const [activeCol, setActiveCol] = useState(null);
+  const [activeColumn, setActiveColumn] = useState(null);
+  const navigate = useNavigate();
 
-  function handleDragEnd(event) {
+
+  function onDragEnd(event) {
     const { active, over } = event;
     if (!over) return;
 
-    const sourceCol = activeCol;
-    const destCol = over.data.current?.column;
+    const from = activeColumn;
+    const to = over.data.current?.column;
 
-    if (!sourceCol || !destCol) return;
+    if (!from || !to) return;
 
-    const sourceItems = [...columns[sourceCol]];
-    const destItems = [...columns[destCol]];
+    const sourceItems = [...columns[from]];
+    const destItems = [...columns[to]];
 
-    const activeIndex = sourceItems.findIndex(i => i.id === active.id);
-    const [moved] = sourceItems.splice(activeIndex, 1);
-
+    const index = sourceItems.findIndex(i => i.id === active.id);
+    const [moved] = sourceItems.splice(index, 1);
     destItems.push(moved);
 
     setColumns({
       ...columns,
-      [sourceCol]: sourceItems,
-      [destCol]: destItems,
+      [from]: sourceItems,
+      [to]: destItems,
     });
   }
 
   return (
-    <div style={{ padding: "30px" }}>
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      style={{ padding: "30px" }}
+    >
       <h1>Maintenance Kanban</h1>
+      <p style={{ color: "#64748b", marginBottom: "25px" }}>
+        Track and manage maintenance workflow
+      </p>
 
       <DndContext
         collisionDetection={closestCenter}
-        onDragStart={(e) => setActiveCol(e.active.data.current.column)}
-        onDragEnd={handleDragEnd}
+        onDragStart={(e) => setActiveColumn(e.active.data.current.column)}
+        onDragEnd={onDragEnd}
       >
-        <div style={{ display: "flex", gap: "20px", marginTop: "30px" }}>
+        <div style={board}>
           {Object.entries(columns).map(([key, items]) => (
             <KanbanColumn key={key} id={key} items={items} />
           ))}
         </div>
       </DndContext>
-    </div>
+    </motion.div>
   );
 }
 
-/* ---------- Column ---------- */
+/* ---------------- COLUMN ---------------- */
 
 function KanbanColumn({ id, items }) {
   return (
-    <div style={column}>
-      <h3>{titleMap[id]}</h3>
+    <motion.div
+      whileHover={{ backgroundColor: "#eef2ff" }}
+      transition={{ duration: 0.2 }}
+      style={column}
+    >
+      <h3 style={{ marginBottom: "12px" }}>{titleMap[id]}</h3>
 
       <SortableContext
         items={items.map(i => i.id)}
         strategy={verticalListSortingStrategy}
       >
-        {items.map(item => (
-          <KanbanCard key={item.id} item={item} column={id} />
-        ))}
+        {items.length === 0 ? (
+          <div style={emptyColumn}>No tasks</div>
+        ) : (
+          items.map(item => (
+            <KanbanCard key={item.id} item={item} column={id} />
+          ))
+        )}
       </SortableContext>
-    </div>
+    </motion.div>
   );
 }
 
-/* ---------- Card ---------- */
+/* ---------------- CARD ---------------- */
 
 function KanbanCard({ item, column }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({
-    id: item.id,
-    data: { column },
-  });
+  const { setNodeRef, attributes, listeners, transform, transition } =
+    useSortable({
+      id: item.id,
+      data: { column },
+    });
 
   return (
-    <div
+    <motion.div
       ref={setNodeRef}
       {...attributes}
       {...listeners}
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.98 }}
       style={{
         ...card,
         transform: CSS.Transform.toString(transform),
@@ -111,14 +130,45 @@ function KanbanCard({ item, column }) {
         borderLeft: `6px solid ${priorityColor(item.priority)}`,
       }}
     >
-      <strong>{item.title}</strong>
-      <p style={small}>Technician: {item.tech}</p>
-      <p style={small}>Priority: {item.priority}</p>
-    </div>
+      <strong onClick={() => navigate("/maintenance/101")} style={{ cursor: "pointer" }}>
+          {item.title}
+      </strong>
+
+      <p style={meta}>Technician: {item.tech}</p>
+      <PriorityBadge value={item.priority} />
+    </motion.div>
   );
 }
 
-/* ---------- Helpers ---------- */
+/* ---------------- UI PARTS ---------------- */
+
+function PriorityBadge({ value }) {
+  const map = {
+    High: ["#fee2e2", "#991b1b"],
+    Medium: ["#fef3c7", "#92400e"],
+    Low: ["#dcfce7", "#166534"],
+  };
+
+  const [bg, color] = map[value];
+
+  return (
+    <span
+      style={{
+        background: bg,
+        color,
+        padding: "4px 10px",
+        borderRadius: "12px",
+        fontSize: "12px",
+        display: "inline-block",
+        marginTop: "6px",
+      }}
+    >
+      {value}
+    </span>
+  );
+}
+
+/* ---------------- HELPERS ---------------- */
 
 const titleMap = {
   open: "Open",
@@ -127,31 +177,45 @@ const titleMap = {
 };
 
 function priorityColor(p) {
-  if (p === "High") return "#f97316";
-  if (p === "Medium") return "#eab308";
+  if (p === "High") return "#ef4444";
+  if (p === "Medium") return "#f59e0b";
   return "#22c55e";
 }
 
-/* ---------- Styles ---------- */
+/* ---------------- STYLES ---------------- */
+
+const board = {
+  display: "flex",
+  gap: "20px",
+};
 
 const column = {
   background: "#f8fafc",
-  padding: "15px",
+  padding: "16px",
+  borderRadius: "14px",
   width: "300px",
-  borderRadius: "10px",
-  minHeight: "400px",
+  minHeight: "420px",
+  transition: "0.2s",
 };
 
 const card = {
   background: "#ffffff",
-  padding: "12px",
-  borderRadius: "8px",
+  padding: "14px",
+  borderRadius: "10px",
   marginBottom: "12px",
-  boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
+  boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+  cursor: "grab",
 };
 
-const small = {
+const meta = {
   fontSize: "13px",
   color: "#475569",
-  margin: "4px 0",
+  margin: "6px 0",
+};
+
+const emptyColumn = {
+  textAlign: "center",
+  color: "#94a3b8",
+  fontSize: "14px",
+  marginTop: "40px",
 };
