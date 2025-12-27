@@ -1,0 +1,90 @@
+/* Root container */
+.dashboard {
+  padding: 24px;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* Top navigation */
+.dashboard-nav {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid #cbd5e1;
+  padding-bottom: 12px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  color: #475569;
+}
+
+/* Search bar */
+.dashboard-search {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #020617;
+  color: #e5e7eb;
+  margin-bottom: 28px;
+}
+
+.dashboard-search::placeholder {
+  color: #94a3b8;
+}
+
+/* Stat card container */
+.dashboard-stats {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+/* Table wrapper */
+.dashboard-table {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+/* Table header */
+.dashboard-table-header {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 1.5fr 1.5fr 1.5fr;
+  padding: 14px;
+  background: #020617;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Table row */
+.dashboard-table-row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 1.5fr 1.5fr 1.5fr;
+  padding: 14px;
+  font-size: 14px;
+  color: #0f172a;
+  border-bottom: 1px dashed #cbd5e1;
+}
+
+/* Faded placeholder row (like your screenshot) */
+.dashboard-table-row.muted {
+  color: #94a3b8;
+}
+.dashboard-table-row.muted:hover {
+  background: transparent;
+  cursor: default;
+}
+/* Table row hover effect */
+.dashboard-table-row:hover {
+  background: #f1f5f9;
+  cursor: pointer;
+}   
+/* Pagination controls */
+.dashboard-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
