@@ -21,16 +21,37 @@ export default function MaintenanceForm() {
 
   const [form, setForm] = useState({
     title: "",
-    equipment: "",
-    team: "",
-    technician: "",
+    equipment: preFilledData.equipmentId || "",
+    equipmentName: preFilledData.equipmentName || "",
+    category: "",
+    team: preFilledData.teamName || "",
+    teamId: preFilledData.teamId || "",
+    technician: preFilledData.technicianName || "",
+    technicianId: preFilledData.technicianId || "",
     type: "",
     priority: "",
     date: "",
+    duration: "",
     description: "",
+    stage: "New" // Default stage
   });
 
   const [loading, setLoading] = useState(false);
+  const [autoFilled, setAutoFilled] = useState(false);
+
+  // Auto-fill on mount if data was passed
+  useEffect(() => {
+    if (preFilledData.equipmentId) {
+      const equipment = equipmentList.find(eq => eq.id === preFilledData.equipmentId);
+      if (equipment) {
+        setForm(prev => ({
+          ...prev,
+          category: equipment.category
+        }));
+        setAutoFilled(true);
+      }
+    }
+  }, []);
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -54,14 +75,20 @@ export default function MaintenanceForm() {
     e.preventDefault();
     setLoading(true);
 
+    // Simulate API call
     setTimeout(() => {
-      alert("Maintenance request created successfully ✅");
+      console.log("Maintenance Request Created:", form);
+      alert("✅ Maintenance request created successfully!");
+      
+      // In real app: await axios.post('/api/maintenance', form);
+      
       setLoading(false);
       navigate("/kanban"); // Redirect after success
     }, 1200);
   }
 
   const isDisabled = !form.title || !form.equipment || !form.type || !form.priority;
+  const isPreventive = form.type === "Preventive";
 
   return (
     <div className="form-page-container">
@@ -142,6 +169,7 @@ export default function MaintenanceForm() {
                 { value: "Preventive", label: "Preventive (Check)" },
                 { value: "Upgrade", label: "Upgrade" },
               ]}
+              required
             />
 
             <Select
@@ -155,6 +183,7 @@ export default function MaintenanceForm() {
                 { value: "High", label: "High" },
                 { value: "Critical", label: "Critical" },
               ]}
+              required
             />
 
             <Input
@@ -216,7 +245,7 @@ function Input({ label, disabled, ...props }) {
   );
 }
 
-function Select({ label, options, ...props }) {
+function Select({ label, options, required, ...props }) {
   return (
     <div className="input-group">
       <label className="input-label">{label}</label>

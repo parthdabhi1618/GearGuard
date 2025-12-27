@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { FiTool, FiAlertCircle, FiClock, FiTrash2, FiArrowRight, FiPlus } from "react-icons/fi";
-import "./Dashboard.css"; // Import the CSS file
+import "./Dashboard.css";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -36,34 +36,34 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* STATS GRID */}
+      {/* STATS GRID - Improved spacing and alignment */}
       <div className="stats-grid">
         <ModernStatCard 
           title="Total Equipment" 
           value={stats.equipment} 
           color="#3b82f6" 
-          icon={<FiTool />}
+          icon={<FiTool size={22} />}
           onClick={() => navigate("/equipment")}
         />
         <ModernStatCard 
           title="Open Requests" 
           value={stats.open} 
           color="#f59e0b" 
-          icon={<FiAlertCircle />}
+          icon={<FiAlertCircle size={22} />}
           onClick={() => navigate("/kanban")}
         />
         <ModernStatCard 
           title="Overdue" 
           value={stats.overdue} 
           color="#ef4444" 
-          icon={<FiClock />}
+          icon={<FiClock size={22} />}
           onClick={() => navigate("/kanban")}
         />
         <ModernStatCard 
           title="Scrapped" 
           value={stats.scrapped} 
           color="#64748b" 
-          icon={<FiTrash2 />}
+          icon={<FiTrash2 size={22} />}
           onClick={() => navigate("/equipment")}
         />
       </div>
@@ -75,7 +75,7 @@ export default function Dashboard() {
           onClick={() => navigate("/kanban")}
           className="view-all-link"
         >
-          View all <FiArrowRight />
+          View all <FiArrowRight size={16} />
         </span>
       </div>
 
@@ -121,21 +121,23 @@ export default function Dashboard() {
 
 /* ---------- INTERNAL COMPONENTS ---------- */
 
-// Enhanced Stat Card with Hover and Icon support
+// Enhanced Stat Card with consistent icon sizing and spacing
 function ModernStatCard({ title, value, color, icon, onClick }) {
   return (
     <div className="stat-card" onClick={onClick}>
       <div className="stat-header">
-        <div>
-          <p style={{ color: "#64748b", fontSize: "14px", fontWeight: "500", margin: 0 }}>{title}</p>
-          <h2 style={{ fontSize: "32px", fontWeight: "700", color: "#0f172a", margin: "5px 0 0" }}>{value}</h2>
+        <div className="stat-text-container">
+          <p className="stat-title">{title}</p>
+          <h2 className="stat-value">{value}</h2>
         </div>
-        {/* Dynamic Icon Background */}
-        <div className="stat-icon-bg" style={{ backgroundColor: color, color: color, opacity: 1 }}>
-          <span style={{ color: "white" }}>{icon}</span>
+        {/* Icon with consistent sizing */}
+        <div className="stat-icon-bg" style={{ backgroundColor: color }}>
+          <span className="stat-icon-wrapper">
+            {icon}
+          </span>
         </div>
       </div>
-      <div style={{ fontSize: "12px", color: "#94a3b8" }}>
+      <div className="stat-footer">
         Tap to view details
       </div>
     </div>
@@ -171,19 +173,18 @@ function PriorityBadge({ value }) {
   );
 }
 
-// Simple text badge for Status
 function StatusBadge({ status }) {
-    const isDone = status === "Done";
-    return (
-        <span style={{ 
-            color: isDone ? "#166534" : "#334155", 
-            background: isDone ? "#f0fdf4" : "#f1f5f9",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            fontSize: "13px",
-            fontWeight: "500"
-        }}>
-            {status}
-        </span>
-    )
+  const isDone = status === "Done";
+  return (
+    <span style={{ 
+      color: isDone ? "#166534" : "#334155", 
+      background: isDone ? "#f0fdf4" : "#f1f5f9",
+      padding: "4px 8px",
+      borderRadius: "4px",
+      fontSize: "13px",
+      fontWeight: "500"
+    }}>
+      {status}
+    </span>
+  );
 }

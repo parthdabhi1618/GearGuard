@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiSearch, FiPlus, FiEye, FiFilter } from "react-icons/fi";
+import { FiSearch, FiPlus, FiEye } from "react-icons/fi";
 import "./EquipmentList.css";
 
 export default function EquipmentList() {
@@ -35,7 +35,11 @@ export default function EquipmentList() {
           <p>Manage all assets and machines</p>
         </div>
 
-        <button className="primary-btn">
+        {/* Connected Add Equipment Button */}
+        <button 
+          className="primary-btn"
+          onClick={() => navigate("/equipment/add")}
+        >
           <FiPlus size={18} /> Add Equipment
         </button>
       </div>
