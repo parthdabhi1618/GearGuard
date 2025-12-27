@@ -14,16 +14,12 @@ import EquipmentDetails from "./pages/Equipment/EquipmentDetails/EquipmentDetail
 import EquipmentForm from "./pages/Equipment/EquipmentForm/EquipmentForm.jsx";
 
 /* -------- MAINTENANCE -------- */
-import MaintenanceList from "./pages/Maintenance/MaintenanceList.jsx"; // ✅ New Import
+import MaintenanceList from "./pages/Maintenance/MaintenanceList.jsx";
 import MaintenanceForm from "./pages/Maintenance/MaintenanceForm.jsx";
 import MaintenanceDetails from "./pages/Maintenance/MaintenanceDetails.jsx";
-<<<<<<< HEAD
-import MaintenanceList from "./pages/Maintenance/MaintenanceList.jsx";
 import MaintenanceTeams from "./pages/MaintenanceTeams/MaintenanceTeams.jsx";
-=======
 
 /* -------- WORKFLOWS -------- */
->>>>>>> ff749a0486352e5548648775af7d25790daa5656
 import KanbanBoard from "./pages/Kanban/KanbanBoard.jsx";
 import MaintenanceCalendar from "./pages/Calendar/MaintenanceCalendar.jsx";
 import Reports from "./pages/Reports/Reports.jsx";
@@ -34,8 +30,6 @@ import Notifications from "./pages/Notifications/Notifications.jsx";
 import TeamList from "./pages/Teams/TeamList.jsx";
 import TeamForm from "./pages/Teams/TeamForm.jsx";
 import TeamDetails from "./pages/Teams/TeamDetails.jsx";
-
-import Reports from "./pages/Reports/Reports.jsx";
 
 
 export default function AppRoutes() {
@@ -132,74 +126,66 @@ export default function AppRoutes() {
         }
       />
 
-      {/* 4. Visual Workflows */}
-      <Route
-        path="/teams"
-        element={
-          <ProtectedRoute>
-            <MaintenanceTeams />
-          </ProtectedRoute>
-        }
-      />
+{/* 4. Visual Workflows */}
+<Route
+  path="/teams"
+  element={
+    <ProtectedRoute>
+      <MaintenanceTeams />
+    </ProtectedRoute>
+  }
+/>
 
-      <Route
-        path="/kanban"
-        element={
-          <ProtectedRoute>
-            <KanbanBoard />
-          </ProtectedRoute>
-        }
-      />
+<Route
+  path="/kanban"
+  element={
+    <ProtectedRoute>
+      <KanbanBoard />
+    </ProtectedRoute>
+  }
+/>
 
-      <Route
-        path="/calendar"
-        element={
-          <ProtectedRoute>
-            <MaintenanceCalendar />
-          </ProtectedRoute>
-        }
-      />
+<Route
+  path="/calendar"
+  element={
+    <ProtectedRoute>
+      <MaintenanceCalendar />
+    </ProtectedRoute>
+  }
+/>
 
-<<<<<<< HEAD
-=======
+{/* Teams Management */}
+<Route path="/teams" element={<ProtectedRoute><TeamList /></ProtectedRoute>} />
+<Route path="/teams/new" element={<ProtectedRoute><TeamForm /></ProtectedRoute>} />
+<Route path="/teams/:id" element={<ProtectedRoute><TeamDetails /></ProtectedRoute>} />
 
-      {/* Teams Management */}
-      <Route path="/teams" element={<ProtectedRoute><TeamList /></ProtectedRoute>} />
-      <Route path="/teams/new" element={<ProtectedRoute><TeamForm /></ProtectedRoute>} />
-      <Route path="/teams/:id" element={<ProtectedRoute><TeamDetails /></ProtectedRoute>} />
+{/* Reports & Analytics */}
+<Route
+  path="/reports"
+  element={
+    <ProtectedRoute>
+      <Reports />
+    </ProtectedRoute>
+  }
+/>
 
-      {/* Reports & Analytics */}
->>>>>>> ff749a0486352e5548648775af7d25790daa5656
-      <Route
-        path="/reports"
-        element={
-          <ProtectedRoute>
-            <Reports />
-          </ProtectedRoute>
-        }
-      />
+<Route
+  path="/settings"
+  element={
+    <ProtectedRoute>
+      <Settings />
+    </ProtectedRoute>
+  }
+/>
 
-<<<<<<< HEAD
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/notifications"
-        element={
-          <ProtectedRoute>
-            <Notifications />
-          </ProtectedRoute>
-        }
-      />
-
-=======
->>>>>>> ff749a0486352e5548648775af7d25790daa5656
+<Route
+  path="/notifications"
+  element={
+    <ProtectedRoute>
+      <Notifications />
+    </ProtectedRoute>
+  }
+/>
       {/* ---------- FALLBACK ---------- */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

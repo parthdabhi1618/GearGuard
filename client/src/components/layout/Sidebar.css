@@ -156,6 +156,9 @@
   
   .nav-link.active::before {
     display: none;
+  }
+}
+
 /* --- SUBMENU STYLES --- */
 .menu-item {
   position: relative;
