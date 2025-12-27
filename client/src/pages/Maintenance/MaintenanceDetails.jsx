@@ -1,147 +1,157 @@
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { 
+  FiArrowLeft, 
+  FiAlertTriangle, 
+  FiCheckCircle, 
+  FiClock, 
+  FiFileText, 
+  FiActivity 
+} from "react-icons/fi";
+import "./MaintenanceDetails.css";
 
 export default function MaintenanceDetails() {
   const navigate = useNavigate();
 
   const request = {
     id: "MR-101",
-    title: "Motor Repair",
+    title: "Motor Repair - Conveyor",
     equipment: "CNC Machine (EQ-001)",
-    technician: "Ravi",
+    technician: "Ravi Sharma",
     priority: "High",
     status: "In Progress",
-    dueDate: "2025-12-12",
+    dueDate: "2024-12-10", // Set to past date to show Overdue logic
+    description: "Motor makes loud grinding noise during startup sequence. Needs coil inspection and bearing replacement."
   };
 
   const timeline = [
-    { text: "Request created", date: "10 Dec 2025" },
-    { text: "Assigned to Ravi", date: "11 Dec 2025" },
-    { text: "Marked In Progress", date: "12 Dec 2025" },
+    { text: "Request Created", date: "10 Dec 2025", active: true },
+    { text: "Assigned to Ravi", date: "11 Dec 2025", active: true },
+    { text: "Work Started", date: "12 Dec 2025", active: true },
+    { text: "Parts Ordered", date: "13 Dec 2025", active: false },
+    { text: "Completion", date: "-", active: false },
   ];
 
   const isOverdue = new Date(request.dueDate) < new Date();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      style={{ padding: "30px", maxWidth: "900px" }}
-    >
-      <button onClick={() => navigate(-1)} style={backBtn}>
-        ← Back
+    <div className="maintenance-container">
+      
+      {/* 1. Navigation */}
+      <button onClick={() => navigate(-1)} className="back-nav">
+        <FiArrowLeft /> Back to List
       </button>
 
-      <h1>{request.title}</h1>
+      {/* 2. Header & Actions */}
+      <div className="header-row">
+        <div className="request-title">
+          <h1>{request.title}</h1>
+          <div className="request-meta">
+            <span style={{ color: "#64748b", fontWeight: 500 }}>#{request.id}</span>
+            <PriorityBadge value={request.priority} />
+            <StatusBadge value={request.status} />
+          </div>
+        </div>
 
-      {isOverdue && <OverdueBadge />}
-
-      <div style={card}>
-        <Info label="Equipment" value={request.equipment} />
-        <Info label="Technician" value={request.technician} />
-        <Info label="Priority" value={request.priority} />
-        <Info label="Status" value={request.status} />
-        <Info label="Due Date" value={request.dueDate} />
+        <div className="action-group">
+          <button className="btn btn-danger">Scrap Request</button>
+          <button className="btn btn-primary">
+            <FiCheckCircle /> Mark Done
+          </button>
+        </div>
       </div>
 
-      <h3 style={{ marginTop: "30px" }}>Activity Timeline</h3>
+      {/* 3. Main Layout Grid */}
+      <div className="details-grid">
+        
+        {/* Left Column: Details */}
+        <div className="detail-column">
+          
+          {isOverdue && (
+            <div className="overdue-alert">
+              <FiAlertTriangle />
+              <span>This request is overdue by 2 days.</span>
+            </div>
+          )}
 
-      <div style={timelineBox}>
-        {timeline.map((t, i) => (
-          <div key={i} style={timelineItem}>
-            <div style={dot}></div>
-            <div>
-              <strong>{t.text}</strong>
-              <p style={{ fontSize: "12px", color: "#64748b" }}>{t.date}</p>
+          <div className="detail-card">
+            <div className="card-title">
+              <FiFileText color="#2563eb" /> Request Details
+            </div>
+            
+            <div className="info-fields">
+              <InfoItem label="Equipment" value={request.equipment} />
+              <InfoItem label="Technician" value={request.technician} />
+              <InfoItem label="Due Date" value={request.dueDate} />
+              <InfoItem label="Department" value="Mechanical" />
+            </div>
+
+            <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #f1f5f9" }}>
+               <div className="field-label">Description</div>
+               <p style={{ color: "#334155", lineHeight: "1.6" }}>{request.description}</p>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
 
-      <div style={{ marginTop: "30px", display: "flex", gap: "12px" }}>
-        <button style={primaryBtn}>Mark as Done</button>
-        <button style={dangerBtn}>Scrap Request</button>
+        {/* Right Column: Timeline */}
+        <div className="timeline-column">
+          <div className="detail-card">
+            <div className="card-title">
+              <FiActivity color="#2563eb" /> Activity Log
+            </div>
+            
+            <div className="timeline-container">
+              {timeline.map((t, i) => (
+                <div key={i} className={`timeline-item ${t.active ? 'active' : ''}`}>
+                  <div className="timeline-dot"></div>
+                  <div className="timeline-text">{t.text}</div>
+                  <div className="timeline-date">{t.date}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-/* ---------- COMPONENTS ---------- */
+/* ---------- HELPER COMPONENTS ---------- */
 
-function Info({ label, value }) {
+function InfoItem({ label, value }) {
   return (
-    <p>
-      <strong>{label}:</strong> {value}
-    </p>
+    <div>
+      <div className="field-label">{label}</div>
+      <div className="field-value">{value}</div>
+    </div>
   );
 }
 
-function OverdueBadge() {
+function PriorityBadge({ value }) {
+  const map = {
+    High: { bg: "#fee2e2", text: "#991b1b" },
+    Medium: { bg: "#fef3c7", text: "#92400e" },
+    Low: { bg: "#dcfce7", text: "#166534" },
+  };
+  const style = map[value];
   return (
-    <span style={overdue}>
-      ⏰ Overdue
+    <span style={{ 
+      background: style.bg, color: style.text, 
+      padding: "4px 10px", borderRadius: "12px", fontSize: "12px", fontWeight: "600" 
+    }}>
+      {value}
     </span>
   );
 }
 
-/* ---------- STYLES ---------- */
-
-const card = {
-  background: "#fff",
-  padding: "20px",
-  borderRadius: "12px",
-  boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-};
-
-const timelineBox = {
-  marginTop: "15px",
-  paddingLeft: "10px",
-};
-
-const timelineItem = {
-  display: "flex",
-  gap: "12px",
-  marginBottom: "16px",
-};
-
-const dot = {
-  width: "10px",
-  height: "10px",
-  borderRadius: "50%",
-  background: "#2563eb",
-  marginTop: "6px",
-};
-
-const overdue = {
-  display: "inline-block",
-  background: "#fee2e2",
-  color: "#991b1b",
-  padding: "6px 12px",
-  borderRadius: "20px",
-  marginBottom: "10px",
-};
-
-const primaryBtn = {
-  background: "#2563eb",
-  color: "#fff",
-  border: "none",
-  padding: "10px 16px",
-  borderRadius: "8px",
-};
-
-const dangerBtn = {
-  background: "#dc2626",
-  color: "#fff",
-  border: "none",
-  padding: "10px 16px",
-  borderRadius: "8px",
-};
-
-const backBtn = {
-  marginBottom: "15px",
-  background: "transparent",
-  border: "none",
-  color: "#2563eb",
-  cursor: "pointer",
-};
+function StatusBadge({ value }) {
+    return (
+        <span style={{ 
+            background: "#f1f5f9", color: "#475569", 
+            padding: "4px 10px", borderRadius: "12px", fontSize: "12px", fontWeight: "600",
+            border: "1px solid #e2e8f0"
+        }}>
+          {value}
+        </span>
+    )
+}

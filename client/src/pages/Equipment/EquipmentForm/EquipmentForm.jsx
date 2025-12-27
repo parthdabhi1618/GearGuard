@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import { 
+  FiArrowLeft, 
+  FiSave, 
+  FiBox, 
+  FiMapPin, 
+  FiCpu, 
+  FiDollarSign 
+} from "react-icons/fi";
+import "./EquipmentForm.css";
 
 export default function EquipmentForm() {
   const navigate = useNavigate();
@@ -10,6 +19,7 @@ export default function EquipmentForm() {
   const [loading, setLoading] = useState(false);
   const [teams, setTeams] = useState([]);
   const [technicians, setTechnicians] = useState([]);
+  
   const [formData, setFormData] = useState({
     name: "",
     serialNumber: "",
@@ -89,364 +99,228 @@ export default function EquipmentForm() {
   };
 
   return (
-    <div style={container}>
-      <div style={header}>
-        <button onClick={() => navigate("/equipment")} style={backBtn}>
-          ← Back
+    <div className="form-page-container">
+      {/* Header */}
+      <div className="form-header">
+        <button onClick={() => navigate("/equipment")} className="back-link">
+          <FiArrowLeft /> Back to Equipment List
         </button>
-        <h1>{isEditMode ? "Edit Equipment" : "Add New Equipment"}</h1>
+        <h1>{isEditMode ? "Edit Equipment Details" : "Add New Equipment"}</h1>
       </div>
 
-      <form onSubmit={handleSubmit} style={form}>
-        {/* Basic Information */}
-        <section style={section}>
-          <h2 style={sectionTitle}>Basic Information</h2>
-          <div style={grid}>
-            <div style={field}>
-              <label style={label}>
-                Equipment Name <span style={{ color: "#ef4444" }}>*</span>
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                style={input}
-                placeholder="e.g., CNC Machine"
-              />
-            </div>
-
-            <div style={field}>
-              <label style={label}>
-                Serial Number <span style={{ color: "#ef4444" }}>*</span>
-              </label>
-              <input
-                type="text"
-                name="serialNumber"
-                value={formData.serialNumber}
-                onChange={handleChange}
-                required
-                style={input}
-                placeholder="e.g., SN123456"
-              />
-            </div>
-
-            <div style={field}>
-              <label style={label}>Category</label>
-              <input
-                type="text"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                style={input}
-                placeholder="e.g., Machinery, IT Equipment"
-              />
-            </div>
-
-            <div style={field}>
-              <label style={label}>Status</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                style={input}
-              >
-                <option value="active">Active</option>
-                <option value="scrapped">Scrapped</option>
-              </select>
-            </div>
-
-            <div style={field}>
-              <label style={label}>Manufacturer</label>
-              <input
-                type="text"
-                name="manufacturer"
-                value={formData.manufacturer}
-                onChange={handleChange}
-                style={input}
-                placeholder="e.g., Siemens"
-              />
-            </div>
-
-            <div style={field}>
-              <label style={label}>Model</label>
-              <input
-                type="text"
-                name="model"
-                value={formData.model}
-                onChange={handleChange}
-                style={input}
-                placeholder="e.g., X-2000"
-              />
-            </div>
+      <form onSubmit={handleSubmit} className="form-card">
+        
+        {/* SECTION 1: GENERAL INFO */}
+        <div className="form-section">
+          <div className="section-title">
+            <FiBox color="#2563eb" /> General Information
           </div>
-        </section>
-
-        {/* Tracking Information */}
-        <section style={section}>
-          <h2 style={sectionTitle}>Tracking Information</h2>
-          <div style={grid}>
-            <div style={field}>
-              <label style={label}>
-                Department <span style={{ color: "#ef4444" }}>*</span>
-              </label>
-              <input
-                type="text"
-                name="department"
-                value={formData.department}
-                onChange={handleChange}
-                required
-                style={input}
-                placeholder="e.g., Production, IT, HR"
-              />
-            </div>
-
-            <div style={field}>
-              <label style={label}>Assigned To (Employee)</label>
-              <input
-                type="text"
-                name="assignedTo"
-                value={formData.assignedTo}
-                onChange={handleChange}
-                style={input}
-                placeholder="e.g., John Doe"
-              />
-            </div>
-
-            <div style={field}>
-              <label style={label}>
-                Location <span style={{ color: "#ef4444" }}>*</span>
-              </label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                required
-                style={input}
-                placeholder="e.g., Building A, Floor 2, Room 205"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Purchase & Warranty */}
-        <section style={section}>
-          <h2 style={sectionTitle}>Purchase & Warranty Information</h2>
-          <div style={grid}>
-            <div style={field}>
-              <label style={label}>
-                Purchase Date <span style={{ color: "#ef4444" }}>*</span>
-              </label>
-              <input
-                type="date"
-                name="purchaseDate"
-                value={formData.purchaseDate}
-                onChange={handleChange}
-                required
-                style={input}
-              />
-            </div>
-
-            <div style={field}>
-              <label style={label}>Warranty Expiry</label>
-              <input
-                type="date"
-                name="warrantyExpiry"
-                value={formData.warrantyExpiry}
-                onChange={handleChange}
-                style={input}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Team Assignment */}
-        <section style={section}>
-          <h2 style={sectionTitle}>Team & Technician Assignment</h2>
-          <div style={grid}>
-            <div style={field}>
-              <label style={label}>
-                Maintenance Team <span style={{ color: "#ef4444" }}>*</span>
-              </label>
-              <select
-                name="team_id"
-                value={formData.team_id}
-                onChange={handleChange}
-                required
-                style={input}
-              >
-                <option value="">Select a team</option>
-                {teams.map((team) => (
-                  <option key={team._id} value={team._id}>
-                    {team.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div style={field}>
-              <label style={label}>
-                Default Technician <span style={{ color: "#ef4444" }}>*</span>
-              </label>
-              <select
-                name="default_technician_id"
-                value={formData.default_technician_id}
-                onChange={handleChange}
-                required
-                style={input}
-              >
-                <option value="">Select a technician</option>
-                {technicians.map((tech) => (
-                  <option key={tech._id} value={tech._id}>
-                    {tech.name} ({tech.email})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </section>
-
-        {/* Additional Details */}
-        <section style={section}>
-          <h2 style={sectionTitle}>Additional Details</h2>
-          <div style={field}>
-            <label style={label}>Specifications</label>
-            <textarea
-              name="specifications"
-              value={formData.specifications}
+          <div className="form-grid">
+            <Input 
+              label="Equipment Name" 
+              name="name" 
+              value={formData.name} 
+              onChange={handleChange} 
+              required 
+              placeholder="e.g. CNC Machine"
+            />
+            <Input 
+              label="Serial Number" 
+              name="serialNumber" 
+              value={formData.serialNumber} 
+              onChange={handleChange} 
+              required 
+              placeholder="e.g. SN-2024-X"
+            />
+            <Input 
+              label="Category" 
+              name="category" 
+              value={formData.category} 
+              onChange={handleChange} 
+              placeholder="e.g. Heavy Machinery"
+            />
+            <Select 
+              label="Status" 
+              name="status" 
+              value={formData.status} 
               onChange={handleChange}
-              style={{ ...input, minHeight: "80px", resize: "vertical" }}
-              placeholder="Technical specifications..."
+              options={[
+                { value: "active", label: "Active" },
+                { value: "scrapped", label: "Scrapped" },
+                { value: "maintenance", label: "Under Maintenance" }
+              ]}
             />
           </div>
+        </div>
 
-          <div style={field}>
-            <label style={label}>Notes</label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              style={{ ...input, minHeight: "80px", resize: "vertical" }}
-              placeholder="Additional notes..."
+        {/* SECTION 2: TECHNICAL DETAILS */}
+        <div className="form-section">
+          <div className="section-title">
+            <FiCpu color="#2563eb" /> Technical Details
+          </div>
+          <div className="form-grid">
+            <Input 
+              label="Manufacturer" 
+              name="manufacturer" 
+              value={formData.manufacturer} 
+              onChange={handleChange} 
+            />
+            <Input 
+              label="Model" 
+              name="model" 
+              value={formData.model} 
+              onChange={handleChange} 
+            />
+            
+            <div className="input-group">
+              <label className="input-label">Maintenance Team <span className="required-star">*</span></label>
+              <select 
+                name="team_id" 
+                value={formData.team_id} 
+                onChange={handleChange} 
+                className="modern-select"
+                required
+              >
+                <option value="">Select Team</option>
+                {teams.map((t) => <option key={t._id} value={t._id}>{t.name}</option>)}
+              </select>
+            </div>
+
+            <div className="input-group">
+              <label className="input-label">Default Technician <span className="required-star">*</span></label>
+              <select 
+                name="default_technician_id" 
+                value={formData.default_technician_id} 
+                onChange={handleChange} 
+                className="modern-select"
+                required
+              >
+                <option value="">Select Technician</option>
+                {technicians.map((t) => <option key={t._id} value={t._id}>{t.name}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 3: LOCATION & TRACKING */}
+        <div className="form-section">
+          <div className="section-title">
+            <FiMapPin color="#2563eb" /> Location & Tracking
+          </div>
+          <div className="form-grid">
+            <Input 
+              label="Department" 
+              name="department" 
+              value={formData.department} 
+              onChange={handleChange} 
+              required 
+            />
+            <Input 
+              label="Location" 
+              name="location" 
+              value={formData.location} 
+              onChange={handleChange} 
+              required 
+              placeholder="e.g. Building A, Floor 2"
+            />
+            <Input 
+              label="Assigned Employee" 
+              name="assignedTo" 
+              value={formData.assignedTo} 
+              onChange={handleChange} 
             />
           </div>
-        </section>
+        </div>
 
-        {/* Submit Buttons */}
-        <div style={actions}>
-          <button
-            type="button"
-            onClick={() => navigate("/equipment")}
-            style={cancelBtn}
-          >
+        {/* SECTION 4: PURCHASE INFO */}
+        <div className="form-section">
+          <div className="section-title">
+            <FiDollarSign color="#2563eb" /> Purchase & Warranty
+          </div>
+          <div className="form-grid">
+            <Input 
+              type="date" 
+              label="Purchase Date" 
+              name="purchaseDate" 
+              value={formData.purchaseDate} 
+              onChange={handleChange} 
+              required 
+            />
+            <Input 
+              type="date" 
+              label="Warranty Expiry" 
+              name="warrantyExpiry" 
+              value={formData.warrantyExpiry} 
+              onChange={handleChange} 
+            />
+          </div>
+        </div>
+
+        {/* SECTION 5: NOTES */}
+        <div className="form-section">
+          <div className="form-grid">
+             <TextArea 
+               label="Specifications" 
+               name="specifications" 
+               value={formData.specifications} 
+               onChange={handleChange} 
+               placeholder="Detailed specs..."
+             />
+             <TextArea 
+               label="Additional Notes" 
+               name="notes" 
+               value={formData.notes} 
+               onChange={handleChange} 
+             />
+          </div>
+        </div>
+
+        {/* FOOTER */}
+        <div className="form-actions">
+          <button type="button" onClick={() => navigate("/equipment")} className="btn-cancel">
             Cancel
           </button>
-          <button type="submit" disabled={loading} style={submitBtn}>
-            {loading ? "Saving..." : isEditMode ? "Update Equipment" : "Add Equipment"}
+          <button type="submit" disabled={loading} className="btn-submit">
+            <FiSave /> {loading ? "Saving..." : "Save Equipment"}
           </button>
         </div>
+
       </form>
     </div>
   );
 }
 
-// Styles
-const container = {
-  padding: "30px",
-  maxWidth: "1200px",
-  margin: "0 auto",
-};
+/* ---------- HELPER COMPONENTS ---------- */
 
-const header = {
-  marginBottom: "30px",
-};
+function Input({ label, required, ...props }) {
+  return (
+    <div className="input-group">
+      <label className="input-label">
+        {label} {required && <span className="required-star">*</span>}
+      </label>
+      <input className="modern-input" required={required} {...props} />
+    </div>
+  );
+}
 
-const backBtn = {
-  background: "none",
-  border: "none",
-  color: "#3b82f6",
-  fontSize: "14px",
-  cursor: "pointer",
-  marginBottom: "10px",
-  display: "flex",
-  alignItems: "center",
-  gap: "5px",
-};
+function Select({ label, options, ...props }) {
+  return (
+    <div className="input-group">
+      <label className="input-label">{label}</label>
+      <select className="modern-select" {...props}>
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
 
-const form = {
-  background: "#fff",
-  borderRadius: "12px",
-  padding: "30px",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-};
-
-const section = {
-  marginBottom: "40px",
-  paddingBottom: "30px",
-  borderBottom: "1px solid #e5e7eb",
-};
-
-const sectionTitle = {
-  fontSize: "18px",
-  fontWeight: "600",
-  color: "#1e293b",
-  marginBottom: "20px",
-};
-
-const grid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-  gap: "20px",
-};
-
-const field = {
-  display: "flex",
-  flexDirection: "column",
-};
-
-const label = {
-  fontSize: "14px",
-  fontWeight: "500",
-  color: "#374151",
-  marginBottom: "8px",
-};
-
-const input = {
-  padding: "10px 14px",
-  border: "1px solid #d1d5db",
-  borderRadius: "6px",
-  fontSize: "14px",
-  outline: "none",
-  transition: "border-color 0.2s",
-};
-
-const actions = {
-  display: "flex",
-  justifyContent: "flex-end",
-  gap: "15px",
-  marginTop: "30px",
-};
-
-const cancelBtn = {
-  padding: "10px 24px",
-  border: "1px solid #d1d5db",
-  borderRadius: "6px",
-  background: "#fff",
-  color: "#374151",
-  fontSize: "14px",
-  fontWeight: "500",
-  cursor: "pointer",
-};
-
-const submitBtn = {
-  padding: "10px 24px",
-  border: "none",
-  borderRadius: "6px",
-  background: "#3b82f6",
-  color: "#fff",
-  fontSize: "14px",
-  fontWeight: "500",
-  cursor: "pointer",
-};
+function TextArea({ label, ...props }) {
+  return (
+    <div className="input-group">
+      <label className="input-label">{label}</label>
+      <textarea className="modern-textarea" {...props} />
+    </div>
+  );
+}
