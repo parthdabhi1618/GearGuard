@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import StatCard from "../../components/common/StatCard";
+import { FiTool, FiAlertCircle, FiClock, FiTrash2, FiArrowRight, FiPlus } from "react-icons/fi";
+import "./Dashboard.css"; // Import the CSS file
 
 export default function Dashboard() {
   const navigate = useNavigate();
 
+  // Data
   const stats = {
     equipment: 18,
     open: 6,
@@ -12,157 +14,176 @@ export default function Dashboard() {
   };
 
   const recent = [
-    { id: 1, title: "Motor Repair", status: "Open", priority: "High" },
-    { id: 2, title: "AC Service", status: "Done", priority: "Low" },
-    { id: 3, title: "Server Check", status: "In Progress", priority: "Medium" },
+    { id: 101, title: "Motor Repair - Conveyor Belt", status: "Open", priority: "High" },
+    { id: 102, title: "AC Service - Server Room", status: "Done", priority: "Low" },
+    { id: 103, title: "Hydraulic Pump Check", status: "In Progress", priority: "Medium" },
   ];
 
   return (
-    <div style={{ padding: "30px" }}>
+    <div className="dashboard-container">
       {/* HEADER */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <h1 style={{ fontWeight: 700 }}>Dashboard</h1>
-          <p style={{ color: "#64748b" }}>Overview of maintenance activities</p>
+      <div className="dashboard-header">
+        <div className="dashboard-title">
+          <h1>Dashboard</h1>
+          <p>Overview of maintenance activities</p>
         </div>
 
         <button
           onClick={() => navigate("/maintenance/new")}
-          style={primaryBtn}
+          className="primary-btn"
         >
-          + Create Maintenance
+          <FiPlus size={18} /> Create Maintenance
         </button>
       </div>
 
-      {/* STATS */}
-      <div
-        style={{
-          display: "flex",
-          gap: "20px",
-          marginTop: "30px",
-          flexWrap: "wrap",
-        }}
-      >
-        <StatCard title="Total Equipment" value={stats.equipment} color="#3b82f6" to="/equipment" />
-        <StatCard title="Open Requests" value={stats.open} color="#f59e0b" to="/kanban" />
-        <StatCard title="Overdue" value={stats.overdue} color="#ef4444" to="/kanban" />
-        <StatCard title="Scrapped" value={stats.scrapped} color="#64748b" to="/equipment" />
+      {/* STATS GRID */}
+      <div className="stats-grid">
+        <ModernStatCard 
+          title="Total Equipment" 
+          value={stats.equipment} 
+          color="#3b82f6" 
+          icon={<FiTool />}
+          onClick={() => navigate("/equipment")}
+        />
+        <ModernStatCard 
+          title="Open Requests" 
+          value={stats.open} 
+          color="#f59e0b" 
+          icon={<FiAlertCircle />}
+          onClick={() => navigate("/kanban")}
+        />
+        <ModernStatCard 
+          title="Overdue" 
+          value={stats.overdue} 
+          color="#ef4444" 
+          icon={<FiClock />}
+          onClick={() => navigate("/kanban")}
+        />
+        <ModernStatCard 
+          title="Scrapped" 
+          value={stats.scrapped} 
+          color="#64748b" 
+          icon={<FiTrash2 />}
+          onClick={() => navigate("/equipment")}
+        />
       </div>
 
       {/* RECENT MAINTENANCE */}
-      <div
-        style={{
-          marginTop: "40px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+      <div className="section-header">
         <h3>Recent Maintenance</h3>
         <span
           onClick={() => navigate("/kanban")}
-          style={{ color: "#2563eb", cursor: "pointer", fontSize: "14px" }}
+          className="view-all-link"
         >
-          View all →
+          View all <FiArrowRight />
         </span>
       </div>
 
-      <table style={table}>
-        <thead style={{ background: "#f8fafc" }}>
-          <tr>
-            <th style={th}>ID</th>
-            <th style={th}>Title</th>
-            <th style={th}>Status</th>
-            <th style={th}>Priority</th>
-          </tr>
-        </thead>
-        <tbody>
-          {recent.length === 0 ? (
-            <tr>
-              <td colSpan="4" style={empty}>
-                No maintenance requests yet
-              </td>
-            </tr>
-          ) : (
-            recent.map((r) => (
-              <tr key={r.id}>
-                <td style={td}>{r.id}</td>
-                <td style={td}>{r.title}</td>
-                <td style={td}>{r.status}</td>
-                <td style={td}>
-                  <PriorityBadge value={r.priority} />
-                </td>
+      <div className="table-wrapper">
+        <div className="responsive-table-container">
+          <table className="modern-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Priority</th>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {recent.length === 0 ? (
+                <tr>
+                  <td colSpan="4" style={{ textAlign: "center", padding: "30px", color: "#94a3b8" }}>
+                    No maintenance requests yet
+                  </td>
+                </tr>
+              ) : (
+                recent.map((r) => (
+                  <tr key={r.id}>
+                    <td style={{ fontWeight: "600", color: "#64748b" }}>#{r.id}</td>
+                    <td style={{ fontWeight: "500" }}>{r.title}</td>
+                    <td>
+                      <StatusBadge status={r.status} />
+                    </td>
+                    <td>
+                      <PriorityBadge value={r.priority} />
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
 
-/* ---------- COMPONENTS ---------- */
+/* ---------- INTERNAL COMPONENTS ---------- */
+
+// Enhanced Stat Card with Hover and Icon support
+function ModernStatCard({ title, value, color, icon, onClick }) {
+  return (
+    <div className="stat-card" onClick={onClick}>
+      <div className="stat-header">
+        <div>
+          <p style={{ color: "#64748b", fontSize: "14px", fontWeight: "500", margin: 0 }}>{title}</p>
+          <h2 style={{ fontSize: "32px", fontWeight: "700", color: "#0f172a", margin: "5px 0 0" }}>{value}</h2>
+        </div>
+        {/* Dynamic Icon Background */}
+        <div className="stat-icon-bg" style={{ backgroundColor: color, color: color, opacity: 1 }}>
+          <span style={{ color: "white" }}>{icon}</span>
+        </div>
+      </div>
+      <div style={{ fontSize: "12px", color: "#94a3b8" }}>
+        Tap to view details
+      </div>
+    </div>
+  );
+}
 
 function PriorityBadge({ value }) {
   const map = {
-    High: ["#fee2e2", "#991b1b"],
-    Medium: ["#fef3c7", "#92400e"],
-    Low: ["#dcfce7", "#166534"],
+    High: { bg: "#fee2e2", text: "#991b1b", dot: "#ef4444" },
+    Medium: { bg: "#fef3c7", text: "#92400e", dot: "#f59e0b" },
+    Low: { bg: "#dcfce7", text: "#166534", dot: "#22c55e" },
   };
 
-  const [bg, color] = map[value];
+  const style = map[value] || map.Low;
 
   return (
     <span
       style={{
-        background: bg,
-        color,
-        padding: "4px 10px",
-        borderRadius: "12px",
+        background: style.bg,
+        color: style.text,
+        padding: "4px 12px",
+        borderRadius: "20px",
         fontSize: "12px",
+        fontWeight: "600",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px"
       }}
     >
+      <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: style.dot }}></span>
       {value}
     </span>
   );
 }
 
-/* ---------- STYLES ---------- */
-
-const primaryBtn = {
-  background: "#2563eb",
-  color: "#fff",
-  border: "none",
-  padding: "10px 16px",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontSize: "14px",
-};
-
-const table = {
-  width: "100%",
-  background: "#ffffff",
-  marginTop: "10px",
-  borderRadius: "10px",
-  borderCollapse: "collapse",
-  overflow: "hidden",
-};
-
-const th = {
-  textAlign: "left",
-  padding: "12px",
-  fontSize: "14px",
-  color: "#475569",
-};
-
-const td = {
-  padding: "12px",
-  fontSize: "14px",
-  borderTop: "1px solid #e2e8f0",
-};
-
-const empty = {
-  textAlign: "center",
-  padding: "20px",
-  color: "#64748b",
-};
+// Simple text badge for Status
+function StatusBadge({ status }) {
+    const isDone = status === "Done";
+    return (
+        <span style={{ 
+            color: isDone ? "#166534" : "#334155", 
+            background: isDone ? "#f0fdf4" : "#f1f5f9",
+            padding: "4px 8px",
+            borderRadius: "4px",
+            fontSize: "13px",
+            fontWeight: "500"
+        }}>
+            {status}
+        </span>
+    )
+}

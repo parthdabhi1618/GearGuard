@@ -1,24 +1,34 @@
 import { useNavigate } from "react-router-dom";
+import "./StatCard.css"; // Ensure this import path is correct
 
-export default function StatCard({ title, value, color, to }) {
+export default function StatCard({ title, value, color, to, icon }) {
   const navigate = useNavigate();
+  const isClickable = Boolean(to);
 
   return (
     <div
-      onClick={() => to && navigate(to)}
-      style={{
-        background: "#ffffff",
-        padding: "20px",
-        borderRadius: "10px",
-        width: "230px",
-        borderLeft: `6px solid ${color}`,
-        boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-        cursor: to ? "pointer" : "default",
-        transition: "0.2s",
-      }}
+      className={`stat-card ${isClickable ? "clickable" : ""}`}
+      onClick={() => isClickable && navigate(to)}
+      // We pass the color to CSS via a variable or inline style for the specific dynamic elements
+      style={{ color: color }} 
     >
-      <p style={{ fontSize: "14px", color: "#64748b" }}>{title}</p>
-      <h2 style={{ margin: 0 }}>{value}</h2>
+      <div className="stat-content">
+        <h3 className="stat-title">{title}</h3>
+        <h2 className="stat-value">{value}</h2>
+      </div>
+
+      {/* Render Icon only if provided */}
+      {icon && (
+        <div 
+          className="stat-icon-box"
+          style={{ 
+            backgroundColor: `${color}20`, // Adds 20% opacity to the hex color
+            color: color 
+          }}
+        >
+          {icon}
+        </div>
+      )}
     </div>
   );
 }

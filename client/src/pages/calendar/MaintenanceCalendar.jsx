@@ -1,46 +1,64 @@
-import { useEffect } from "react";
-import { motion } from "framer-motion" ;
+import React from "react";
+import { motion } from "framer-motion";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import "./MaintenanceCalendar.css"; // Import the CSS
 
 export default function MaintenanceCalendar() {
   const events = [
     {
       title: "AC Preventive Service",
       date: "2025-12-10",
-      priority: "Medium",
+      extendedProps: { priority: "Medium" }, // Correct way to store extra data
     },
     {
       title: "Generator Inspection",
       date: "2025-12-15",
-      priority: "High",
+      extendedProps: { priority: "High" },
     },
     {
       title: "Server Maintenance",
       date: "2025-12-27",
-      priority: "Low",
+      extendedProps: { priority: "Low" },
+    },
+    {
+      title: "Conveyor Belt Check",
+      date: "2025-12-28",
+      extendedProps: { priority: "High" },
     },
   ];
 
   function handleDateClick(info) {
-    alert(`Create preventive maintenance on ${info.dateStr}`);
+    // In a real app, open a modal here
+    const confirm = window.confirm(`Schedule new maintenance on ${info.dateStr}?`);
+    if (confirm) {
+      console.log("Open Create Modal");
+    }
   }
 
+  // Custom Event Rendering (The Pills)
   function renderEventContent(eventInfo) {
-    const color = priorityColor(eventInfo.event.extendedProps.priority);
+    const priority = eventInfo.event.extendedProps.priority;
+    const style = getPriorityStyle(priority);
 
     return (
       <div
         style={{
-          background: color.bg,
-          color: color.text,
-          padding: "4px 6px",
-          borderRadius: "6px",
-          fontSize: "12px",
+          background: style.bg,
+          color: style.text,
+          borderLeft: `3px solid ${style.border}`,
+          padding: "4px 8px",
+          borderRadius: "4px",
+          fontSize: "11px",
+          fontWeight: "600",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          gap: "5px"
         }}
       >
         {eventInfo.event.title}
@@ -48,96 +66,68 @@ export default function MaintenanceCalendar() {
     );
   }
 
-  // ✅ SAFE STYLE INJECTION
-  useEffect(() => {
-    if (document.getElementById("calendar-styles")) return;
-
-    const style = document.createElement("style");
-    style.id = "calendar-styles";
-    style.innerHTML = `
-      @media (max-width: 768px) {
-        .fc-toolbar-title {
-          font-size: 16px !important;
-        }
-        .fc-daygrid-day-number {
-          font-size: 12px;
-        }
-      }
-
-      .fc-daygrid-day:hover {
-        background-color: #eef2ff;
-        cursor: pointer;
-      }
-
-      .fc-button {
-        border-radius: 8px !important;
-        padding: 6px 10px !important;
-      }
-
-      .fc-button-primary {
-        background-color: #2563eb !important;
-        border: none !important;
-      }
-
-      .fc-button-primary:not(:disabled):hover {
-        background-color: #1d4ed8 !important;
-      }
-    `;
-    document.head.appendChild(style);
-  }, []);
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      style={{ padding: "30px" }}
+      className="calendar-container"
     >
       {/* HEADER */}
-      <h1>Maintenance Calendar</h1>
-      <p style={{ color: "#64748b", marginBottom: "20px" }}>
-        Preventive maintenance scheduling
-      </p>
+      <div className="calendar-header">
+        <h1>Maintenance Calendar</h1>
+        <p>Preventive maintenance scheduling & overview</p>
+      </div>
+
+      {/* LEGEND */}
+      <div className="legend-container">
+        <LegendItem color="#ef4444" label="High Priority" />
+        <LegendItem color="#f59e0b" label="Medium Priority" />
+        <LegendItem color="#22c55e" label="Low Priority" />
+      </div>
 
       {/* CALENDAR CARD */}
-      <div style={card}>
+      <div className="calendar-card">
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
-          height="auto"
+          height="auto" // Adapts height based on rows
+          contentHeight="auto"
           events={events}
           dateClick={handleDateClick}
           eventContent={renderEventContent}
           headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "",
+            left: "title",
+            center: "",
+            right: "today prev,next",
           }}
-          dayMaxEventRows={3}
-          fixedWeekCount={false}
+          dayMaxEventRows={3} // Show "+more" if too many events
+          fixedWeekCount={false} // Don't show empty rows for next month
         />
       </div>
     </motion.div>
   );
 }
 
-/* ---------- HELPERS ---------- */
+/* ---------- HELPERS & SUB-COMPONENTS ---------- */
 
-function priorityColor(priority) {
-  if (priority === "High") {
-    return { bg: "#fee2e2", text: "#991b1b" };
-  }
-  if (priority === "Medium") {
-    return { bg: "#fef3c7", text: "#92400e" };
-  }
-  return { bg: "#dcfce7", text: "#166534" };
+function LegendItem({ color, label }) {
+  return (
+    <div className="legend-item">
+      <span className="legend-dot" style={{ background: color }}></span>
+      {label}
+    </div>
+  );
 }
 
-/* ---------- STYLES ---------- */
-
-const card = {
-  background: "#ffffff",
-  padding: "16px",
-  borderRadius: "14px",
-  boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-};
+function getPriorityStyle(priority) {
+  switch (priority) {
+    case "High":
+      return { bg: "#fee2e2", text: "#991b1b", border: "#ef4444" };
+    case "Medium":
+      return { bg: "#fef3c7", text: "#92400e", border: "#f59e0b" };
+    case "Low":
+    default:
+      return { bg: "#dcfce7", text: "#166534", border: "#22c55e" };
+  }
+}
