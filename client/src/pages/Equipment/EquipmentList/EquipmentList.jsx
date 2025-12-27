@@ -33,7 +33,9 @@ export default function EquipmentList() {
           <p style={{ color: "#64748b" }}>Manage all assets and machines</p>
         </div>
 
-        <button style={primaryBtn}>+ Add Equipment</button>
+        <button style={primaryBtn} onClick={() => navigate("/equipment/add")}>
+          + Add Equipment
+        </button>
       </div>
 
       {/* SEARCH + FILTER */}

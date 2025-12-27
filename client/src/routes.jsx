@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import EquipmentList from "./pages/Equipment/EquipmentList/EquipmentList.jsx";
 import EquipmentDetails from "./pages/Equipment/EquipmentDetails/EquipmentDetails.jsx";
+import EquipmentForm from "./pages/Equipment/EquipmentForm/EquipmentForm.jsx";
 import MaintenanceForm from "./pages/Maintenance/MaintenanceForm.jsx";
 import MaintenanceDetails from "./pages/Maintenance/MaintenanceDetails.jsx";
 import KanbanBoard from "./pages/Kanban/KanbanBoard.jsx";
@@ -41,10 +42,28 @@ export default function AppRoutes() {
       />
 
       <Route
+        path="/equipment/add"
+        element={
+          <ProtectedRoute>
+            <EquipmentForm />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/equipment/:id"
         element={
           <ProtectedRoute>
             <EquipmentDetails />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/equipment/:id/edit"
+        element={
+          <ProtectedRoute>
+            <EquipmentForm />
           </ProtectedRoute>
         }
       />
