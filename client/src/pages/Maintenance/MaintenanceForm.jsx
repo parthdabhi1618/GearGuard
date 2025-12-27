@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   FiArrowLeft, 
@@ -11,6 +11,9 @@ import "./MaintenanceForm.css";
 
 export default function MaintenanceForm() {
   const navigate = useNavigate();
+  
+  // Default empty object - can be passed from parent in future
+  const preFilledData = {};
   
   const equipmentList = [
     { id: "EQ-001", name: "CNC Machine", team: "Mechanical", tech: "Ravi Sharma" },
