@@ -80,12 +80,28 @@ export default function MaintenanceForm() {
     setLoading(true);
 
     try {
+      // 1. 🔑 GET TOKEN (CRITICAL FIX)
+      const token = localStorage.getItem("token");
+
+      // Safety check: If no token, force login
+      if (!token) {
+        alert("You are not logged in. Please log in again.");
+        navigate("/login");
+        return;
+      }
+
+      // 2. 📨 PREPARE HEADERS (ATTACH ID CARD)
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}` 
+        }
+      };
+
       // Map priority to enum value: Low=0, Medium=1, High=2, Critical=3
       const priorityMap = { 'Low': '0', 'Medium': '1', 'High': '2', 'Critical': '3' };
       const stateMap = { 'New': 'draft', 'Assigned': 'assigned', 'In Progress': 'in_progress', 'Completed': 'completed' };
       
-      // Make real API call to create maintenance request
-      const response = await axios.post('http://localhost:5000/api/maintenance', {
+      const payload = {
         name: form.title,
         equipment_id: form.equipment,
         equipmentName: form.equipmentName || '',
@@ -95,7 +111,14 @@ export default function MaintenanceForm() {
         priority: priorityMap[form.priority] || '1',
         scheduled_date: form.date,
         state: stateMap[form.stage] || 'draft'
-      });
+      };
+
+      // 3. 🚀 SEND REQUEST WITH CONFIG
+      const response = await axios.post(
+        'http://localhost:5000/api/maintenance', 
+        payload, 
+        config // <--- This argument was missing before!
+      );
       
       console.log("Maintenance Request Created:", response.data);
       alert("✅ Maintenance request created successfully!");
@@ -105,7 +128,14 @@ export default function MaintenanceForm() {
       navigate("/kanban");
     } catch (error) {
       console.error("Error creating request:", error);
-      alert("❌ Error: " + (error.response?.data?.error || error.message));
+      
+      // Handle 401 specifically
+      if (error.response && error.response.status === 401) {
+        alert("Session expired. Please login again.");
+        navigate("/login");
+      } else {
+        alert("❌ Error: " + (error.response?.data?.message || error.message));
+      }
       setLoading(false);
     }
   }
