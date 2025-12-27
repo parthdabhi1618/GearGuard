@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import axios from "axios";
 import {
   DndContext,
   closestCenter,
@@ -73,10 +74,61 @@ export default function KanbanBoard() {
   const [searchParams] = useSearchParams();
   
   const [columns, setColumns] = useState(initialData);
+  const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState(null);
   const [activeItem, setActiveItem] = useState(null);
   const [equipmentFilter, setEquipmentFilter] = useState(searchParams.get("equipment") || "");
   const [showFilters, setShowFilters] = useState(false);
+
+  // Fetch requests from API on component mount
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  async function fetchRequests() {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost:5000/api/maintenance');
+      const requests = response.data;
+      
+      // Organize requests into columns by state
+      const organizedData = {
+        new: [],
+        progress: [],
+        repaired: [],
+        scrap: []
+      };
+      
+      requests.forEach(request => {
+        // Map state to column names
+        let stage = 'new';
+        if (request.state === 'in_progress') stage = 'progress';
+        else if (request.state === 'completed') stage = 'repaired';
+        else if (request.state === 'cancelled') stage = 'scrap';
+        else stage = 'new';
+        
+        if (organizedData[stage]) {
+          organizedData[stage].push({
+            id: request._id || request.id,
+            title: request.name, // Backend returns 'name' not 'title'
+            tech: request.technician_id || 'Unassigned',
+            priority: request.priority === '0' ? 'Low' : request.priority === '1' ? 'Medium' : request.priority === '2' ? 'High' : 'Critical',
+            equipment: request.equipment_id,
+            equipmentName: request.equipmentName,
+            dueDate: request.scheduled_date
+          });
+        }
+      });
+      
+      setColumns(organizedData);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+      // Fall back to initial data if API fails
+      setColumns(initialData);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // Setup sensors with better touch handling
   const sensors = useSensors(
@@ -121,7 +173,12 @@ export default function KanbanBoard() {
     if (!over) return;
 
     const sourceColId = findColumn(active.id);
-    const destColId = over.data.current?.sortable?.containerId || over.id;
+    let destColId = over.id;
+    
+    // If dropping on a card, get its column
+    if (!['new', 'progress', 'repaired', 'scrap'].includes(destColId)) {
+      destColId = findColumn(over.id);
+    }
 
     if (!sourceColId || !destColId) return;
 
@@ -136,15 +193,20 @@ export default function KanbanBoard() {
       }
     }
 
+    // Get the item being moved
+    const movedItem = columns[sourceColId]?.find(i => i.id === active.id);
+    
+    if (!movedItem) return;
+
     // Move between same column (reordering)
     if (sourceColId === destColId) {
       const items = [...columns[sourceColId]];
       const oldIndex = items.findIndex((i) => i.id === active.id);
       const newIndex = items.findIndex((i) => i.id === over.id);
       
-      if (oldIndex !== newIndex) {
-        const [movedItem] = items.splice(oldIndex, 1);
-        items.splice(newIndex, 0, movedItem);
+      if (oldIndex !== newIndex && newIndex !== -1) {
+        const [moved] = items.splice(oldIndex, 1);
+        items.splice(newIndex, 0, moved);
         
         setColumns({
           ...columns,
@@ -159,8 +221,10 @@ export default function KanbanBoard() {
     const destItems = [...columns[destColId]];
     const itemIndex = sourceItems.findIndex((i) => i.id === active.id);
     
-    const [movedItem] = sourceItems.splice(itemIndex, 1);
-    destItems.push(movedItem);
+    if (itemIndex === -1) return;
+    
+    const [moved] = sourceItems.splice(itemIndex, 1);
+    destItems.push(moved);
 
     setColumns({
       ...columns,
@@ -168,7 +232,33 @@ export default function KanbanBoard() {
       [destColId]: destItems,
     });
 
+    // Save the state change to backend
+    updateRequestState(movedItem.id, destColId);
     console.log(`Request ${active.id} moved from ${sourceColId} to ${destColId}`);
+  }
+
+  async function updateRequestState(requestId, columnId) {
+    try {
+      // Map column IDs to backend state values
+      const stateMap = {
+        'new': 'draft',
+        'progress': 'in_progress',
+        'repaired': 'completed',
+        'scrap': 'cancelled'
+      };
+      
+      const newState = stateMap[columnId] || 'draft';
+      
+      await axios.patch(`http://localhost:5000/api/maintenance/${requestId}/state`, {
+        state: newState
+      });
+      
+      console.log(`Request ${requestId} state updated to ${newState}`);
+    } catch (error) {
+      console.error('Error updating request state:', error);
+      // Refresh the data if update fails
+      fetchRequests();
+    }
   }
 
   function findColumn(itemId) {
@@ -280,9 +370,11 @@ export default function KanbanBoard() {
   );
 }
 
-/* ---------------- COLUMN ---------------- */
+/* ---------------- COLUMN WITH DROP ZONE ---------------- */
 
 function KanbanColumn({ id, items }) {
+  const { setNodeRef } = useSortable({ id });
+  
   const titleMap = {
     new: "New Requests",
     progress: "In Progress",
@@ -291,7 +383,10 @@ function KanbanColumn({ id, items }) {
   };
 
   return (
-    <div className="kanban-column">
+    <div 
+      ref={setNodeRef}
+      className="kanban-column"
+    >
       <div className="column-header">
         <span className="column-title">
           <span style={{ 
@@ -306,7 +401,6 @@ function KanbanColumn({ id, items }) {
       </div>
 
       <SortableContext
-        id={id}
         items={items.map((i) => i.id)}
         strategy={verticalListSortingStrategy}
       >
