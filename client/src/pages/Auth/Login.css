@@ -115,7 +115,7 @@
 
 .input-icon {
   position: absolute;
-  left: 14px;
+  right: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: #94a3b8;
@@ -125,7 +125,7 @@
 
 .modern-input {
   width: 100%;
-  padding: 14px 14px 14px 45px; /* Space for icon */
+  padding: 14px 45px 14px 14px; /* Space for icon */
   border: 1px solid #cbd5e1;
   border-radius: 10px;
   font-size: 14px;
@@ -141,6 +141,32 @@
 
 .modern-input:focus + .input-icon {
   color: #2563eb;
+}
+
+/* Password Toggle Button */
+.password-toggle-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.password-toggle-btn:hover {
+  color: #2563eb;
+}
+
+.password-toggle-btn:focus {
+  outline: none;
 }
 
 /* Actions */
