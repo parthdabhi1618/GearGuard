@@ -1,8 +1,25 @@
 import React, { useState } from 'react';
 import { NavLink } from "react-router-dom";
+<<<<<<< HEAD
 import { FiHome, FiTool, FiPlusCircle, FiColumns, FiCalendar, FiX, FiChevronDown, FiBarChart3, FiSettings, FiBell } from "react-icons/fi"; 
 import './Sidebar.css';
 
+=======
+import { 
+  FiHome, 
+  FiTool, 
+  FiPlusCircle, 
+  FiColumns, 
+  FiCalendar, 
+  FiList, 
+  FiUsers, 
+  FiPieChart, 
+  FiX 
+} from "react-icons/fi"; 
+import './Sidebar.css';
+
+// Accept 'isOpen' and 'onClose' props for mobile handling
+>>>>>>> ff749a0486352e5548648775af7d25790daa5656
 export default function Sidebar({ isOpen, onClose }) {
   const [expandedMenu, setExpandedMenu] = useState(null);
 
@@ -32,6 +49,7 @@ export default function Sidebar({ isOpen, onClose }) {
           </button>
         </div>
 
+<<<<<<< HEAD
         <p className="menu-label">Menu</p>
         <Menu to="/" icon={<FiHome />} text="Dashboard" onClick={handleNavClick} />
 
@@ -73,12 +91,38 @@ export default function Sidebar({ isOpen, onClose }) {
         <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid #e5e7eb' }}>
           <p className="menu-label">Actions</p>
           <Menu to="/maintenance/new" icon={<FiPlusCircle />} text="New Maintenance" onClick={handleNavClick} />
+=======
+        {/* --- MAIN --- */}
+        <p className="menu-label">Main</p>
+        <Menu to="/" icon={<FiHome />} text="Dashboard" onClick={onClose} />
+        <Menu to="/reports" icon={<FiPieChart />} text="Analytics" onClick={onClose} />
+
+        {/* --- ASSETS & TEAMS --- */}
+        <p className="menu-label">Resources</p>
+        <Menu to="/equipment" icon={<FiTool />} text="Equipment" onClick={onClose} />
+        <Menu to="/teams" icon={<FiUsers />} text="Teams" onClick={onClose} />
+
+        {/* --- MAINTENANCE WORKFLOW --- */}
+        <p className="menu-label">Workflows</p>
+        <Menu to="/maintenance" icon={<FiList />} text="Maintenance List" onClick={onClose} />
+        <Menu to="/kanban" icon={<FiColumns />} text="Kanban Board" onClick={onClose} />
+        <Menu to="/calendar" icon={<FiCalendar />} text="Calendar" onClick={onClose} />
+
+        {/* --- ACTIONS --- */}
+        <div style={{ marginTop: 'auto' }}>
+          <p className="menu-label">Actions</p>
+          <Menu to="/maintenance/new" icon={<FiPlusCircle />} text="New Request" onClick={onClose} />
+>>>>>>> ff749a0486352e5548648775af7d25790daa5656
         </div>
       </div>
     </>
   );
 }
 
+<<<<<<< HEAD
+=======
+// Menu Link Component
+>>>>>>> ff749a0486352e5548648775af7d25790daa5656
 function Menu({ to, icon, text, onClick }) {
   return (
     <NavLink

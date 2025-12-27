@@ -1,23 +1,74 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { FiTool, FiAlertCircle, FiClock, FiTrash2, FiArrowRight, FiPlus } from "react-icons/fi";
 import "./Dashboard.css";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    equipment: 0,
+    open: 0,
+    overdue: 0,
+    scrapped: 0,
+  });
+  const [recent, setRecent] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Data
-  const stats = {
-    equipment: 18,
-    open: 6,
-    overdue: 2,
-    scrapped: 1,
-  };
+  // Fetch dashboard data on component mount
+  useEffect(() => {
+    fetchDashboardData();
+    
+    // Refresh data every 30 seconds to keep it updated
+    const interval = setInterval(fetchDashboardData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const recent = [
-    { id: 101, title: "Motor Repair - Conveyor Belt", status: "Open", priority: "High" },
-    { id: 102, title: "AC Service - Server Room", status: "Done", priority: "Low" },
-    { id: 103, title: "Hydraulic Pump Check", status: "In Progress", priority: "Medium" },
-  ];
+  async function fetchDashboardData() {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost:5000/api/maintenance');
+      const requests = response.data;
+      
+      // Calculate statistics
+      const open = requests.filter(r => r.state === 'draft' || r.state === 'assigned').length;
+      const inProgress = requests.filter(r => r.state === 'in_progress').length;
+      const scrapped = requests.filter(r => r.state === 'cancelled').length;
+      
+      // Count overdue requests (scheduled_date is in the past and not completed)
+      const now = new Date();
+      const overdue = requests.filter(r => {
+        return r.scheduled_date && 
+               new Date(r.scheduled_date) < now && 
+               !['completed', 'cancelled'].includes(r.state);
+      }).length;
+      
+      setStats({
+        equipment: 18, // This would come from /api/equipment endpoint
+        open: open + inProgress,
+        overdue: overdue,
+        scrapped: scrapped,
+      });
+      
+      // Get the 3 most recent requests
+      const recentRequests = requests
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 3)
+        .map(r => ({
+          id: r._id,
+          title: r.name,
+          status: r.state === 'draft' ? 'Open' : r.state === 'in_progress' ? 'In Progress' : r.state === 'completed' ? 'Done' : 'Cancelled',
+          priority: r.priority === '0' ? 'Low' : r.priority === '1' ? 'Medium' : r.priority === '2' ? 'High' : 'Critical'
+        }));
+      
+      setRecent(recentRequests);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      // Use default empty stats if API fails
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="dashboard-container">

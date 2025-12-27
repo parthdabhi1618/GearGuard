@@ -5,20 +5,38 @@ import Login from "./pages/Auth/Login.jsx";
 import Signup from "./pages/Auth/Signup.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
-/* -------- MAIN PAGES -------- */
+/* -------- DASHBOARD -------- */
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
+
+/* -------- EQUIPMENT -------- */
 import EquipmentList from "./pages/Equipment/EquipmentList/EquipmentList.jsx";
 import EquipmentDetails from "./pages/Equipment/EquipmentDetails/EquipmentDetails.jsx";
 import EquipmentForm from "./pages/Equipment/EquipmentForm/EquipmentForm.jsx";
+
+/* -------- MAINTENANCE -------- */
+import MaintenanceList from "./pages/Maintenance/MaintenanceList.jsx"; // ✅ New Import
 import MaintenanceForm from "./pages/Maintenance/MaintenanceForm.jsx";
 import MaintenanceDetails from "./pages/Maintenance/MaintenanceDetails.jsx";
+<<<<<<< HEAD
 import MaintenanceList from "./pages/Maintenance/MaintenanceList.jsx";
 import MaintenanceTeams from "./pages/MaintenanceTeams/MaintenanceTeams.jsx";
+=======
+
+/* -------- WORKFLOWS -------- */
+>>>>>>> ff749a0486352e5548648775af7d25790daa5656
 import KanbanBoard from "./pages/Kanban/KanbanBoard.jsx";
 import MaintenanceCalendar from "./pages/Calendar/MaintenanceCalendar.jsx";
 import Reports from "./pages/Reports/Reports.jsx";
 import Settings from "./pages/Settings/Settings.jsx";
 import Notifications from "./pages/Notifications/Notifications.jsx";
+
+/* -------- TEAMS -------- */
+import TeamList from "./pages/Teams/TeamList.jsx";
+import TeamForm from "./pages/Teams/TeamForm.jsx";
+import TeamDetails from "./pages/Teams/TeamDetails.jsx";
+
+import Reports from "./pages/Reports/Reports.jsx";
+
 
 export default function AppRoutes() {
   return (
@@ -28,6 +46,8 @@ export default function AppRoutes() {
       <Route path="/signup" element={<Signup />} />
 
       {/* ---------- PROTECTED ROUTES ---------- */}
+      
+      {/* 1. Dashboard */}
       <Route
         path="/"
         element={
@@ -37,6 +57,7 @@ export default function AppRoutes() {
         }
       />
 
+      {/* 2. Equipment Management */}
       <Route
         path="/equipment"
         element={
@@ -73,6 +94,17 @@ export default function AppRoutes() {
         }
       />
 
+      {/* 3. Maintenance Management */}
+      {/* ✅ New Route: The List/Table View */}
+      <Route
+        path="/maintenance"
+        element={
+          <ProtectedRoute>
+            <MaintenanceList />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/maintenance"
         element={
@@ -100,6 +132,7 @@ export default function AppRoutes() {
         }
       />
 
+      {/* 4. Visual Workflows */}
       <Route
         path="/teams"
         element={
@@ -127,6 +160,16 @@ export default function AppRoutes() {
         }
       />
 
+<<<<<<< HEAD
+=======
+
+      {/* Teams Management */}
+      <Route path="/teams" element={<ProtectedRoute><TeamList /></ProtectedRoute>} />
+      <Route path="/teams/new" element={<ProtectedRoute><TeamForm /></ProtectedRoute>} />
+      <Route path="/teams/:id" element={<ProtectedRoute><TeamDetails /></ProtectedRoute>} />
+
+      {/* Reports & Analytics */}
+>>>>>>> ff749a0486352e5548648775af7d25790daa5656
       <Route
         path="/reports"
         element={
@@ -136,6 +179,7 @@ export default function AppRoutes() {
         }
       />
 
+<<<<<<< HEAD
       <Route
         path="/settings"
         element={
@@ -154,6 +198,8 @@ export default function AppRoutes() {
         }
       />
 
+=======
+>>>>>>> ff749a0486352e5548648775af7d25790daa5656
       {/* ---------- FALLBACK ---------- */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

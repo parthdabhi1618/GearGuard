@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { 
   FiArrowLeft, 
   FiSave, 
@@ -11,6 +12,9 @@ import "./MaintenanceForm.css";
 
 export default function MaintenanceForm() {
   const navigate = useNavigate();
+  
+  // Default empty object - can be passed from parent in future
+  const preFilledData = {};
   
   const equipmentList = [
     { id: "EQ-001", name: "CNC Machine", team: "Mechanical", tech: "Ravi Sharma" },
@@ -71,20 +75,39 @@ export default function MaintenanceForm() {
     }
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Maintenance Request Created:", form);
+    try {
+      // Map priority to enum value: Low=0, Medium=1, High=2, Critical=3
+      const priorityMap = { 'Low': '0', 'Medium': '1', 'High': '2', 'Critical': '3' };
+      const stateMap = { 'New': 'draft', 'Assigned': 'assigned', 'In Progress': 'in_progress', 'Completed': 'completed' };
+      
+      // Make real API call to create maintenance request
+      const response = await axios.post('http://localhost:5000/api/maintenance', {
+        name: form.title,
+        equipment_id: form.equipment,
+        equipmentName: form.equipmentName || '',
+        team_id: form.team,
+        technician_id: form.technician,
+        description: form.description,
+        priority: priorityMap[form.priority] || '1',
+        scheduled_date: form.date,
+        state: stateMap[form.stage] || 'draft'
+      });
+      
+      console.log("Maintenance Request Created:", response.data);
       alert("✅ Maintenance request created successfully!");
-      
-      // In real app: await axios.post('/api/maintenance', form);
-      
       setLoading(false);
-      navigate("/kanban"); // Redirect after success
-    }, 1200);
+      
+      // Redirect to kanban - the board will fetch fresh data
+      navigate("/kanban");
+    } catch (error) {
+      console.error("Error creating request:", error);
+      alert("❌ Error: " + (error.response?.data?.error || error.message));
+      setLoading(false);
+    }
   }
 
   const isDisabled = !form.title || !form.equipment || !form.type || !form.priority;
