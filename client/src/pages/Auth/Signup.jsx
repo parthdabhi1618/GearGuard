@@ -1,79 +1,151 @@
-import { motion } from "framer-motion";
-import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { FiUser, FiMail, FiLock, FiArrowRight, FiShield } from "react-icons/fi";
+import "./Signup.css";
 
 export default function Signup() {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+  const [loading, setLoading] = useState(false);
+
+  function handleChange(e) {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  }
 
   function handleSignup(e) {
     e.preventDefault();
-    navigate("/login");
+    
+    if(formData.password !== formData.confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+    }
+
+    setLoading(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      navigate("/login");
+    }, 1000);
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      style={container}
-    >
-      <form style={card} onSubmit={handleSignup}>
-        <h2>Create Account</h2>
+    <div className="signup-page">
+      <div className="signup-container">
+        
+        {/* LEFT SIDE: BRANDING */}
+        <div className="signup-branding">
+          <div className="brand-title">
+            <FiShield size={28} /> GearGuard
+          </div>
+          
+          <div className="brand-pitch">
+            <h2>Join the future of maintenance.</h2>
+            <p>
+              Create your account to start tracking equipment, 
+              managing teams, and predicting downtime before it happens.
+            </p>
+          </div>
+          
+          <div style={{ fontSize: "12px", opacity: 0.7 }}>
+            Trusted by 500+ Industry Leaders
+          </div>
+        </div>
 
-        <input
-          placeholder="Full Name"
-          required
-          onChange={(e) => setName(e.target.value)}
-          style={input}
-        />
+        {/* RIGHT SIDE: FORM */}
+        <div className="signup-form-section">
+          <div className="signup-header">
+            <h2>Create Account</h2>
+            <p>Get started with your free admin account</p>
+          </div>
 
-        <input placeholder="Email" type="email" required style={input} />
-        <input placeholder="Password" type="password" required style={input} />
+          <form onSubmit={handleSignup}>
+            
+            {/* Name Input */}
+            <div className="input-group">
+              <label className="input-label">Full Name</label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="John Doe"
+                  className="modern-input"
+                  required
+                  onChange={handleChange}
+                />
+                <FiUser className="input-icon" />
+              </div>
+            </div>
 
-        <button style={btn}>Sign Up</button>
+            {/* Email Input */}
+            <div className="input-group">
+              <label className="input-label">Email Address</label>
+              <div className="input-wrapper">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="name@company.com"
+                  className="modern-input"
+                  required
+                  onChange={handleChange}
+                />
+                <FiMail className="input-icon" />
+              </div>
+            </div>
 
-        <p style={footer}>
-          Already have an account? <Link to="/login">Login</Link>
-        </p>
-      </form>
-    </motion.div>
+            {/* Password Input */}
+            <div className="input-group">
+              <label className="input-label">Password</label>
+              <div className="input-wrapper">
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Create a password"
+                  className="modern-input"
+                  required
+                  onChange={handleChange}
+                />
+                <FiLock className="input-icon" />
+              </div>
+            </div>
+
+            {/* Confirm Password Input */}
+            <div className="input-group">
+              <label className="input-label">Confirm Password</label>
+              <div className="input-wrapper">
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Repeat password"
+                  className="modern-input"
+                  required
+                  onChange={handleChange}
+                />
+                <FiLock className="input-icon" />
+              </div>
+            </div>
+
+            <button className="signup-btn" disabled={loading}>
+              {loading ? "Creating Account..." : (
+                <>
+                  Create Account <FiArrowRight />
+                </>
+              )}
+            </button>
+
+            <div className="signup-footer">
+              Already have an account? <Link to="/login">Log in</Link>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+    </div>
   );
 }
-
-/* reuse same styles as Login */
-const container = {
-  minHeight: "100vh",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  background: "#f1f5f9",
-};
-
-const card = {
-  background: "#fff",
-  padding: "30px",
-  borderRadius: "14px",
-  width: "320px",
-  boxShadow: "0 15px 40px rgba(0,0,0,0.1)",
-};
-
-const input = {
-  width: "100%",
-  padding: "12px",
-  marginBottom: "14px",
-  borderRadius: "8px",
-  border: "1px solid #cbd5e1",
-};
-
-const btn = {
-  width: "100%",
-  padding: "12px",
-  background: "#2563eb",
-  color: "#fff",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-};
-
-const footer = { marginTop: "15px", fontSize: "14px" };

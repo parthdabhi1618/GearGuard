@@ -1,90 +1,117 @@
-import { motion } from "framer-motion";
-import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { FiMail, FiLock, FiArrowRight, FiShield } from "react-icons/fi";
+import "./Login.css";
 
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   function handleLogin(e) {
     e.preventDefault();
-    localStorage.setItem("auth", "true");
-    navigate("/");
+    setLoading(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      localStorage.setItem("auth", "true");
+      setLoading(false);
+      navigate("/");
+    }, 800);
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      style={container}
-    >
-      <form style={card} onSubmit={handleLogin}>
-        <h2>Login to GearGuard</h2>
-        <p style={sub}>Maintenance Management System</p>
+    <div className="login-page">
+      <div className="login-container">
+        
+        {/* LEFT SIDE: BRANDING */}
+        <div className="login-branding">
+          <div className="brand-header">
+            <FiShield size={28} color="#3b82f6" />
+            <span>GearGuard</span>
+          </div>
+          
+          <div className="brand-quote">
+            <h2>Manage your equipment with precision.</h2>
+            <p>
+              The advanced maintenance system for tracking assets, 
+              scheduling repairs, and ensuring uptime.
+            </p>
+          </div>
+          
+          <div style={{ fontSize: "12px", opacity: 0.6 }}>
+            © 2025 GearGuard Systems
+          </div>
+        </div>
 
-        <input
-          placeholder="Email"
-          type="email"
-          required
-          onChange={(e) => setEmail(e.target.value)}
-          style={input}
-        />
+        {/* RIGHT SIDE: FORM */}
+        <div className="login-form-section">
+          <div className="form-header-text">
+            <h2>Welcome Back</h2>
+            <p>Please enter your details to sign in.</p>
+          </div>
 
-        <input
-          placeholder="Password"
-          type="password"
-          required
-          onChange={(e) => setPassword(e.target.value)}
-          style={input}
-        />
+          <form onSubmit={handleLogin}>
+            
+            {/* Email Input */}
+            <div className="input-group">
+              <label className="input-label">Email Address</label>
+              <div className="input-wrapper">
+                <input
+                  type="email"
+                  placeholder="name@company.com"
+                  className="modern-input"
+                  required
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <FiMail className="input-icon" />
+              </div>
+            </div>
 
-        <button style={btn}>Login</button>
+            {/* Password Input */}
+            <div className="input-group">
+              <label className="input-label">Password</label>
+              <div className="input-wrapper">
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  className="modern-input"
+                  required
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <FiLock className="input-icon" />
+              </div>
+            </div>
 
-        <p style={footer}>
-          Don’t have an account? <Link to="/signup">Sign up</Link>
-        </p>
-      </form>
-    </motion.div>
+            {/* Remember & Forgot */}
+            <div className="form-actions">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#64748b', cursor: 'pointer' }}>
+                <input type="checkbox" style={{ accentColor: '#2563eb' }} /> 
+                Remember me
+              </label>
+              <Link to="/forgot-password" className="forgot-link">
+                Forgot password?
+              </Link>
+            </div>
+
+            {/* Submit Button */}
+            <button className="login-btn" disabled={loading}>
+              {loading ? "Signing in..." : (
+                <>
+                  Sign In <FiArrowRight />
+                </>
+              )}
+            </button>
+
+            <div className="signup-footer">
+              Don’t have an account? <Link to="/signup">Create account</Link>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+    </div>
   );
 }
-
-/* styles */
-const container = {
-  minHeight: "100vh",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  background: "#f1f5f9",
-};
-
-const card = {
-  background: "#fff",
-  padding: "30px",
-  borderRadius: "14px",
-  width: "320px",
-  boxShadow: "0 15px 40px rgba(0,0,0,0.1)",
-};
-
-const sub = { color: "#64748b", marginBottom: "20px" };
-
-const input = {
-  width: "100%",
-  padding: "12px",
-  marginBottom: "14px",
-  borderRadius: "8px",
-  border: "1px solid #cbd5e1",
-};
-
-const btn = {
-  width: "100%",
-  padding: "12px",
-  background: "#2563eb",
-  color: "#fff",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-};
-
-const footer = { marginTop: "15px", fontSize: "14px" };
