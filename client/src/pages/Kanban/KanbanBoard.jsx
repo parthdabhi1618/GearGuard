@@ -7,6 +7,7 @@ import {
   useSensors,
   PointerSensor,
   TouchSensor,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -73,13 +74,25 @@ export default function KanbanBoard() {
   
   const [columns, setColumns] = useState(initialData);
   const [activeId, setActiveId] = useState(null);
+  const [activeItem, setActiveItem] = useState(null);
   const [equipmentFilter, setEquipmentFilter] = useState(searchParams.get("equipment") || "");
   const [showFilters, setShowFilters] = useState(false);
 
-  // Setup sensors
+  // Setup sensors with better touch handling
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor)
+    useSensor(PointerSensor, { 
+      activationConstraint: { 
+        distance: 8,
+        delay: 100,
+        tolerance: 5
+      } 
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5
+      }
+    })
   );
 
   // Filter columns based on equipment
@@ -90,9 +103,20 @@ export default function KanbanBoard() {
     }, {}) : columns;
 
   // Handle Dragging
+  function onDragStart(event) {
+    const { active } = event;
+    setActiveId(active.id);
+    
+    // Find the active item for the overlay
+    const sourceColId = findColumn(active.id);
+    const item = columns[sourceColId]?.find(i => i.id === active.id);
+    setActiveItem(item);
+  }
+
   function onDragEnd(event) {
     const { active, over } = event;
     setActiveId(null);
+    setActiveItem(null);
 
     if (!over) return;
 
@@ -144,7 +168,6 @@ export default function KanbanBoard() {
       [destColId]: destItems,
     });
 
-    // Log the stage change
     console.log(`Request ${active.id} moved from ${sourceColId} to ${destColId}`);
   }
 
@@ -159,7 +182,6 @@ export default function KanbanBoard() {
     navigate("/kanban", { replace: true });
   }
 
-  // Calculate total counts
   const totalRequests = Object.values(filteredColumns).reduce((sum, col) => sum + col.length, 0);
 
   return (
@@ -218,7 +240,7 @@ export default function KanbanBoard() {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
-        onDragStart={(e) => setActiveId(e.active.id)}
+        onDragStart={onDragStart}
         onDragEnd={onDragEnd}
       >
         <div className="kanban-board">
@@ -226,6 +248,33 @@ export default function KanbanBoard() {
             <KanbanColumn key={colId} id={colId} items={items} />
           ))}
         </div>
+
+        {/* Drag Overlay - Shows card while dragging */}
+        <DragOverlay>
+          {activeItem ? (
+            <div className="kanban-card dragging-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                <span className="card-title">
+                  {activeItem.title}
+                </span>
+              </div>
+              <div style={{ 
+                fontSize: "12px", 
+                color: "#64748b", 
+                marginTop: "6px"
+              }}>
+                {activeItem.equipmentName} ({activeItem.equipment})
+              </div>
+              <PriorityBadge value={activeItem.priority} />
+              <div className="card-meta">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <FiUser /> {activeItem.tech}
+                </div>
+                <span>ID: {activeItem.id}</span>
+              </div>
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );
@@ -261,7 +310,7 @@ function KanbanColumn({ id, items }) {
         items={items.map((i) => i.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div style={{ minHeight: "200px" }}>
+        <div className="column-content">
           {items.length === 0 ? (
             <div className="empty-placeholder">
               {id === "scrap" ? "No scrapped items" : "Drop items here"}
@@ -289,13 +338,12 @@ function KanbanCard({ item }) {
     isDragging,
   } = useSortable({ id: item.id });
 
-  // Check if overdue
   const isOverdue = item.dueDate && new Date(item.dueDate) < new Date();
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.3 : 1,
     borderLeft: `4px solid ${priorityColor(item.priority)}`,
   };
 
@@ -307,7 +355,6 @@ function KanbanCard({ item }) {
       {...listeners}
       className="kanban-card"
     >
-      {/* Overdue indicator */}
       {isOverdue && (
         <div className="overdue-strip">
           <FiAlertCircle size={14} />
@@ -318,16 +365,22 @@ function KanbanCard({ item }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
         <span 
           className="card-title" 
-          onClick={() => navigate(`/maintenance/${item.id}`)}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/maintenance/${item.id}`);
+          }}
         >
           {item.title}
         </span>
-        <button style={{ 
-          border: 'none', 
-          background: 'transparent', 
-          cursor: 'pointer', 
-          color: '#94a3b8' 
-        }}>
+        <button 
+          style={{ 
+            border: 'none', 
+            background: 'transparent', 
+            cursor: 'pointer', 
+            color: '#94a3b8' 
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
           <FiMoreHorizontal />
         </button>
       </div>
@@ -372,7 +425,7 @@ function getColumnColor(id) {
   if(id === 'new') return '#3b82f6';
   if(id === 'progress') return '#f59e0b';
   if(id === 'repaired') return '#22c55e';
-  return '#64748b'; // scrap
+  return '#64748b';
 }
 
 function priorityColor(p) {
