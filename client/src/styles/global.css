@@ -1,10 +1,15 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: Inter, system-ui, Arial, sans-serif;
-  background: #f8fafc;
+  background: #f1f5f9;
   color: #0f172a;
 }
 
-h1 {
-  margin-bottom: 20px;
+a {
+  text-decoration: none;
+  color: inherit;
 }

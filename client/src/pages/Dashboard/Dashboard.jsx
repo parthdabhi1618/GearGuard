@@ -4,68 +4,84 @@ import StatCard from "../../components/common/StatCard";
 
 export default function Dashboard() {
   const stats = {
-    criticalEquipment: 5,
-    technicianUtilization: "85%",
-    openRequests: 12,
+    equipment: 18,
+    open: 6,
+    overdue: 2,
+    scrapped: 1,
   };
 
+  const recent = [
+    { id: 1, title: "Motor Repair", status: "Open", priority: "High" },
+    { id: 2, title: "AC Service", status: "Done", priority: "Low" },
+    { id: 3, title: "Server Check", status: "In Progress", priority: "Medium" },
+  ];
+
   return (
-    <div className="dashboard">
-      {/* Navigation */}
-      <div className="dashboard-nav">
-        <span>Maintenance</span>
-        <span>Dashboard</span>
-        <span>Maintenance Calendar</span>
-        <span>Equipment</span>
-        <span>Reporting</span>
-        <span>Teams</span>
-      </div>
+    <div style={{ padding: "30px" }}>
+      <h1>Dashboard</h1>
+      <p style={{ color: "#64748b" }}>
+        Overview of maintenance activities
+      </p>
 
-      {/* Search */}
-      <input
-        className="dashboard-search"
-        placeholder="Search..."
-      />
-
-      {/* Stat Cards */}
-      <div className="dashboard-stats">
-        <StatCard
-          title="Critical Equipment"
-          value="5 Units"
-          color="#ef4444"
-        />
-        <StatCard
-          title="Technician Load"
-          value="85%"
-          color="#3b82f6"
-        />
-        <StatCard
-          title="Open Requests"
-          value="12 Pending"
-          color="#22c55e"
-        />
+      {/* Stats */}
+      <div
+        style={{
+          display: "flex",
+          gap: "20px",
+          marginTop: "30px",
+          flexWrap: "wrap",
+        }}
+      >
+        <StatCard title="Total Equipment" value={stats.equipment} color="#3b82f6" />
+        <StatCard title="Open Requests" value={stats.open} color="#f59e0b" />
+        <StatCard title="Overdue" value={stats.overdue} color="#ef4444" />
+        <StatCard title="Scrapped" value={stats.scrapped} color="#64748b" />
       </div>
 
       {/* Table */}
-      <div className="dashboard-table">
-        <div className="dashboard-table-header">
-          <div>Subject</div>
-          <div>Employee</div>
-          <div>Technician</div>
-          <div>Category</div>
-          <div>Stage</div>
-          <div>Company</div>
-        </div>
-
-        <div className="dashboard-table-row muted">
-          <div>Test activity</div>
-          <div>Michael Admin</div>
-          <div>Alice Foster</div>
-          <div>Computer</div>
-          <div>New Request</div>
-          <div>My Company</div>
-        </div>
-      </div>
+      <h3 style={{ marginTop: "40px" }}>Recent Maintenance</h3>
+      <table
+        style={{
+          width: "100%",
+          background: "#fff",
+          marginTop: "10px",
+          borderRadius: "10px",
+          borderCollapse: "collapse",
+          overflow: "hidden",
+        }}
+      >
+        <thead style={{ background: "#f8fafc" }}>
+          <tr>
+            <th style={th}>ID</th>
+            <th style={th}>Title</th>
+            <th style={th}>Status</th>
+            <th style={th}>Priority</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recent.map((r) => (
+            <tr key={r.id}>
+              <td style={td}>{r.id}</td>
+              <td style={td}>{r.title}</td>
+              <td style={td}>{r.status}</td>
+              <td style={td}>{r.priority}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
+
+const th = {
+  textAlign: "left",
+  padding: "12px",
+  fontSize: "14px",
+  color: "#475569",
+};
+
+const td = {
+  padding: "12px",
+  fontSize: "14px",
+  borderTop: "1px solid #e2e8f0",
+};
