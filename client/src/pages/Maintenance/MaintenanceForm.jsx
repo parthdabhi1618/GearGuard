@@ -80,22 +80,6 @@ export default function MaintenanceForm() {
     setLoading(true);
 
     try {
-      // 1. 🔑 GET TOKEN (CRITICAL FIX)
-      const token = localStorage.getItem("token");
-
-      // Safety check: If no token, force login
-      if (!token) {
-        alert("You are not logged in. Please log in again.");
-        navigate("/login");
-        return;
-      }
-
-      // 2. 📨 PREPARE HEADERS (ATTACH ID CARD)
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}` 
-        }
-      };
 
       // Map priority to enum value: Low=0, Medium=1, High=2, Critical=3
       const priorityMap = { 'Low': '0', 'Medium': '1', 'High': '2', 'Critical': '3' };
@@ -113,11 +97,10 @@ export default function MaintenanceForm() {
         state: stateMap[form.stage] || 'draft'
       };
 
-      // 3. 🚀 SEND REQUEST WITH CONFIG
+      // Send request to backend
       const response = await axios.post(
         'http://localhost:5000/api/maintenance', 
-        payload, 
-        config // <--- This argument was missing before!
+        payload
       );
       
       console.log("Maintenance Request Created:", response.data);
@@ -128,14 +111,7 @@ export default function MaintenanceForm() {
       navigate("/kanban");
     } catch (error) {
       console.error("Error creating request:", error);
-      
-      // Handle 401 specifically
-      if (error.response && error.response.status === 401) {
-        alert("Session expired. Please login again.");
-        navigate("/login");
-      } else {
-        alert("❌ Error: " + (error.response?.data?.message || error.message));
-      }
+      alert("❌ Error: " + (error.response?.data?.message || error.message));
       setLoading(false);
     }
   }

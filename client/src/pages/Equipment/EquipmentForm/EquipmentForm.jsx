@@ -48,22 +48,12 @@ export default function EquipmentForm() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Please login first");
-        navigate("/login");
-        return;
-      }
-
-      const config = {
-        headers: { Authorization: `Bearer ${token}` }
-      };
 
       if (isEditMode) {
         // Update logic here
       } else {
         // Create Logic
-        await axios.post("http://localhost:5000/api/equipment", formData, config);
+        await axios.post("http://localhost:5000/api/equipment", formData);
       }
       
       alert("Equipment Saved Successfully!");

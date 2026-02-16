@@ -21,18 +21,7 @@ export default function EquipmentList() {
   async function fetchEquipment() {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
-      const config = {
-        headers: { Authorization: `Bearer ${token}` }
-      };
-
-      const response = await axios.get("http://localhost:5000/api/equipment", config);
+      const response = await axios.get("http://localhost:5000/api/equipment");
       setEquipment(response.data);
     } catch (error) {
       console.error("Error loading equipment:", error);

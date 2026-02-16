@@ -42,112 +42,68 @@ export default function AppRoutes() {
       {/* 1. Dashboard */}
       <Route
         path="/"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
+        element={<Dashboard />}
       />
 
       {/* 2. Equipment Management */}
       <Route
         path="/equipment"
-        element={
-          <ProtectedRoute>
-            <EquipmentList />
-          </ProtectedRoute>
-        }
+        element={<EquipmentList />}
       />
 
       <Route
         path="/equipment/add"
-        element={
-          <ProtectedRoute>
-            <EquipmentForm />
-          </ProtectedRoute>
-        }
+        element={<EquipmentForm />}
       />
 
       <Route
         path="/equipment/:id"
-        element={
-          <ProtectedRoute>
-            <EquipmentDetails />
-          </ProtectedRoute>
-        }
+        element={<EquipmentDetails />}
       />
 
       <Route
         path="/equipment/:id/edit"
-        element={
-          <ProtectedRoute>
-            <EquipmentForm />
-          </ProtectedRoute>
-        }
+        element={<EquipmentForm />}
       />
 
       {/* 3. Maintenance Management */}
       {/* ✅ New Route: The List/Table View */}
       <Route
         path="/maintenance"
-        element={
-          <ProtectedRoute>
-            <MaintenanceList />
-          </ProtectedRoute>
-        }
+        element={<MaintenanceList />}
       />
 
       <Route
         path="/maintenance/new"
-        element={
-          <ProtectedRoute>
-            <MaintenanceForm />
-          </ProtectedRoute>
-        }
+        element={<MaintenanceForm />}
       />
 
       <Route
         path="/maintenance/:id"
-        element={
-          <ProtectedRoute>
-            <MaintenanceDetails />
-          </ProtectedRoute>
-        }
+        element={<MaintenanceDetails />}
       />
 
       {/* 4. Visual Workflows */}
       <Route
         path="/kanban"
-        element={
-          <ProtectedRoute>
-            <KanbanBoard />
-          </ProtectedRoute>
-        }
+        element={<KanbanBoard />}
       />
 
       <Route
         path="/calendar"
-        element={
-          <ProtectedRoute>
-            <MaintenanceCalendar />
-          </ProtectedRoute>
-        }
+        element={<MaintenanceCalendar />}
       />
 
 
       {/* Teams Management */}
-      <Route path="/teams" element={<ProtectedRoute><TeamList /></ProtectedRoute>} />
-      <Route path="/teams/new" element={<ProtectedRoute><TeamForm /></ProtectedRoute>} />
-      <Route path="/teams/:id" element={<ProtectedRoute><TeamDetails /></ProtectedRoute>} />
+      <Route path="/teams" element={<TeamList />} />
+      <Route path="/teams/new" element={<TeamForm />} />
+      <Route path="/teams/:id" element={<TeamDetails />} />
 
       {/* Reports & Analytics */}
       <Route
         path="/reports"
-        element={
-          <ProtectedRoute>
-            <Reports />
-          </ProtectedRoute>
-        }
+        element={<Reports />}
       />
 
       {/* ---------- FALLBACK ---------- */}

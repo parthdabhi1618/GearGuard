@@ -34,7 +34,7 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
         
         {/* Mobile Header with Close Button */}
         <div className="sidebar-mobile-header">
-          <span className="brand-name-mobile">GearGuard</span>
+          <span className="brand-name-mobile">Campus Service Desk</span>
           <button className="close-btn" onClick={onClose}>
             <FiX />
           </button>

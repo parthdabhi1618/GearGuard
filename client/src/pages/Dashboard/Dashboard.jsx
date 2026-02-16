@@ -14,17 +14,6 @@ export default function Dashboard() {
   const [user, setUser] = useState({ name: "" });
 
   useEffect(() => {
-    // 1. Check Login on Load
-    const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-
-    if (!token) {
-      navigate("/login"); 
-      return;
-    }
-
-    if (storedUser) setUser(JSON.parse(storedUser));
-
     fetchDashboardData();
     
     // Auto-refresh every 30 seconds
@@ -34,19 +23,7 @@ export default function Dashboard() {
 
   async function fetchDashboardData() {
     try {
-      // 🔴 FIX: WE MUST DEFINE TOKEN HERE BEFORE USING IT
-      const token = localStorage.getItem("token"); 
-
-      if (!token) return; // Safety check
-
-      const config = {
-        headers: { Authorization: `Bearer ${token}` } // Now 'token' exists!
-      };
-
-      // Don't trigger loading spinner on background refreshes to avoid flickering
-      // setLoading(true); 
-
-      const response = await axios.get('http://localhost:5000/api/maintenance', config);
+      const response = await axios.get('http://localhost:5000/api/maintenance');
       
       // 🛡️ CRASH PREVENTION: Ensure data is an array
       if (!Array.isArray(response.data)) {
@@ -91,12 +68,6 @@ export default function Dashboard() {
 
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
-      
-      // Only logout if unauthorized (token invalid)
-      if (error.response && error.response.status === 401) {
-        localStorage.removeItem("token");
-        navigate("/login");
-      }
       setLoading(false);
     }
   }
@@ -108,9 +79,9 @@ export default function Dashboard() {
         {/* HEADER */}
         <div className="dashboard-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
           <div className="dashboard-title">
-            <h1 style={{ margin: 0, fontSize: "24px" }}>Dashboard</h1>
+            <h1 style={{ margin: 0, fontSize: "24px" }}>Analytics & Reports</h1>
             <p style={{ margin: "5px 0 0 0", color: "#64748b" }}>
-              Welcome back, <span style={{ color: "#3b82f6", fontWeight: "600" }}>{user.name || "Admin"}</span>
+              Key performance indicators and operational insights.
             </p>
           </div>
 

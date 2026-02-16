@@ -50,18 +50,7 @@ export default function KanbanBoard() {
     try {
       setLoading(true);
       
-      // 🔒 AUTH CHECK
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
-      const config = {
-        headers: { Authorization: `Bearer ${token}` }
-      };
-
-      const response = await axios.get('http://localhost:5000/api/maintenance', config);
+      const response = await axios.get('http://localhost:5000/api/maintenance');
       const requests = response.data;
       
       // Organize requests into columns by state
@@ -97,9 +86,6 @@ export default function KanbanBoard() {
       setColumns(organizedData);
     } catch (error) {
       console.error("Error fetching requests:", error);
-      if (error.response && error.response.status === 401) {
-        navigate("/login");
-      }
     } finally {
       setLoading(false);
     }
@@ -204,9 +190,6 @@ export default function KanbanBoard() {
 
   async function updateRequestState(requestId, columnId) {
     try {
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-
       const stateMap = {
         'new': 'draft',
         'progress': 'in_progress',
@@ -218,8 +201,7 @@ export default function KanbanBoard() {
       
       // NOTE: Ensure you have a PATCH route on backend for this!
       await axios.patch(`http://localhost:5000/api/maintenance/${requestId}/state`, 
-        { state: newState }, 
-        config
+        { state: newState }
       );
       
       console.log(`Request ${requestId} saved as ${newState}`);
